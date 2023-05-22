@@ -1,0 +1,31 @@
+<h1 class="text-center">Image Grid</h1>
+<div class="container">
+  <pagination-component data-pagination-amount="60">
+    <div class="pagination-controls">
+      <input type="radio" class="custom-radio" name="pagination_type" value="infinite" id="pagination_infinite">
+      <label for="pagination_infinite">Infinite</label>
+      <input type="radio" class="custom-radio" name="pagination_type" value="pagination" id="pagination_per_page" checked="">
+      <label for="pagination_per_page">Per page</label>
+    </div>
+
+    <pagination-nav>
+      <!-- This is rendered by JavaScript -->
+    </pagination-nav>
+
+    <div class="grid-wrapper grid">
+      <% for (let i = 0; i < 60; i++) { %>
+        <div class="grid-item">
+          <img src="" class="lazyload">
+        </div>
+      <% } %>
+    </div>
+
+    <pagination-nav>
+      <!-- This is rendered by JavaScript -->
+    </pagination-nav>
+
+    <script type="application/json" id="user-rating-data">
+      <%- data %>
+    </script>
+  </pagination-component>
+</div>

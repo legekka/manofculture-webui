@@ -1,0 +1,421 @@
+/* --- Fonts --- */
+@font-face {
+  font-family: 'Rubik';
+  src: url('Rubik-Light.woff2') format('woff2'),
+       url('Rubik-Light.woff') format('woff'),
+       url('Rubik-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: 'Rubik';
+  src: url('Rubik-LightItalic.woff2') format('woff2'),
+       url('Rubik-LightItalic.woff') format('woff'),
+       url('Rubik-LightItalic.ttf') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: 'Rubik';
+  src: url('Rubik-Regular.woff2') format('woff2'),
+       url('Rubik-Regular.woff') format('woff'),
+       url('Rubik-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: 'Rubik';
+  src: url('Rubik-Italic.woff2') format('woff2'),
+       url('Rubik-Italic.woff') format('woff'),
+       url('Rubik-Italic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: 'Rubik';
+  src: url('Rubik-Medium.woff2') format('woff2'),
+       url('Rubik-Medium.woff') format('woff'),
+       url('Rubik-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: 'Rubik';
+  src: url('Rubik-MediumItalic.woff2') format('woff2'),
+       url('Rubik-MediumItalic.woff') format('woff'),
+       url('Rubik-MediumItalic.ttf') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: 'Rubik';
+  src: url('Rubik-Bold.woff2') format('woff2'),
+       url('Rubik-Bold.woff') format('woff'),
+       url('Rubik-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: 'Rubik';
+  src: url('Rubik-BoldItalic.woff2') format('woff2'),
+       url('Rubik-BoldItalic.woff') format('woff'),
+       url('Rubik-BoldItalic.ttf') format('truetype');
+  font-weight: bold;
+  font-style: italic;
+  font-display: fallback;
+}
+
+/* --- Reset --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+ul[role="list"],
+ol[role="list"] {
+  list-style: none;
+}
+
+html:focus-within {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  text-rendering: optimizeSpeed;
+  line-height: 1.5;
+}
+
+a:not([class]) {
+  text-decoration-skip-ink: auto;
+}
+
+img,
+picture {
+  max-width: 100%;
+  display: block;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- Variables --- */
+:root {
+  --background-color: #2e3440;
+  --font-color: #eceff4;
+  --font-family: 'Rubik', sans-serif;
+  --base-font-size: 10px;
+
+  --background-light: #3b4252;
+  --background-lighter: #434c5e;
+  --background-lightest: #4c566a;
+
+  --accent-1: #8fbcbb;
+  --accent-2: #88c0d0;
+  --accent-3: #81a1c1;
+  --accent-4: #5e81ac;
+}
+
+/* --- Global --- */
+html,
+body {
+  font-family: var(--font-family);
+  font-size: var(--base-font-size);
+  color: var(--font-color);
+  background-color: var(--background-color);
+}
+
+h1 {
+  font-size: 3.2rem;
+  font-weight: bold;
+  line-height: 1.1;
+  margin-bottom: 1em;
+}
+
+h2 {
+  font-size: 2.4rem;
+  font-weight: bold;
+  line-height: 1.1;
+  margin-bottom: 1em;
+}
+
+h3 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  line-height: 1.1;
+  margin-bottom: 1em;
+}
+
+h4 {
+  font-size: 1.6rem;
+  font-weight: bold;
+  line-height: 1.1;
+  margin-bottom: 1em;
+}
+
+h5 {
+  font-size: 1.4rem;
+  font-weight: bold;
+  line-height: 1.1;
+  margin-bottom: 1em;
+}
+
+h6 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  line-height: 1.1;
+  margin-bottom: 1em;
+}
+
+p {
+  font-size: 1.6rem;
+  font-weight: 300;
+  line-height: 1.5;
+  margin-bottom: 1em;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.page-wrapper {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 50px;
+}
+
+@media screen and (max-width: 980px) {
+  .page-wrapper {
+    padding: 25px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .page-wrapper {
+    padding: 15px;
+  }
+}
+
+.grid-wrapper {
+  --col-count: 4;
+  --col-gap: 40px;
+}
+
+@media screen and (max-width: 980px) {
+  .grid-wrapper {
+    --col-count: 3;
+    --col-gap: 25px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .grid-wrapper {
+    --col-count: 2;
+    --col-gap: 10px;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(
+    var(--col-count),
+    calc((100% / var(--col-count)) - ((var(--col-gap) * (var(--col-count) - 1)) / var(--col-count)))
+  );
+  grid-column-gap: var(--col-gap);
+  grid-row-gap: var(--col-gap);
+}
+
+.grid-item {
+  height: 0;
+  padding-bottom: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+}
+
+.grid-item::before {
+  background: linear-gradient(
+  105deg, 
+    var(--background-color) 0%, 
+    var(--background-light) 25%, 
+    var(--background-lighter) 50%,
+    var(--background-color) 75%,
+    var(--background-lighter) 100%
+  );
+  opacity: 1;
+  content: '';
+  position: absolute;
+  background-size: 500% 500%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  animation: image-loading 2s ease-in-out infinite alternate;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.grid-item.loaded::before {
+  opacity: 0;
+}
+
+@keyframes image-loading {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+.grid-item > img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+img.lazyload {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+img.lazyloaded {
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
+}
+
+img.lazyloaded::before {
+  display: none;
+}
+
+/* --- Pagination component --- */
+pagination-component {
+  display: block;
+  position: relative;
+  padding-top: 100px;
+}
+
+.pagination-controls {
+  position: absolute;
+  right: 0;
+  top: 50px;
+  font-size: 1.6rem;
+}
+
+.custom-radio {
+  opacity: 0;
+}
+
+.custom-radio + label {
+  position: relative;
+  padding-left: 2em;
+  cursor: pointer;
+}
+
+.custom-radio + label::before {
+  content: '';
+  display: block;
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 1em;
+  height: 1em;
+  background-color: var(--background-lightest);
+  border-radius: 1em;
+  cursor: pointer;
+}
+
+.custom-radio:checked + label::after {
+  content: '';
+  display: block;
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: 0;
+  width: 1em;
+  height: 1em;
+  border-radius: 1em;
+  box-shadow: inset 0 0 0.01em 0.25em var(--accent-2);
+  cursor: pointer;
+}
+
+/* --- Pagination nav component --- */
+
+pagination-nav {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 30px auto;
+}
+
+pagination-nav a {
+  font-size: 1.6rem;
+  color: var(--font-color);
+  text-decoration: none;
+  padding: 1.5rem;
+  border-radius: 5px;
+  transition: background-color 0.15s ease-in-out;
+}
+
+pagination-nav > * {
+  margin: 0 5px;
+}
+
+pagination-nav a:hover,
+pagination-nav a:focus-visible {
+  background-color: var(--accent-4);
+}
