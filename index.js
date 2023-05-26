@@ -15,14 +15,15 @@ const API_URL = process.env.API_URL;
 
 app.use(cookieParser(COOKIE_SECRET));
 app.use(express.static('./assets'));
-app.use(express.static('./assets/fonts'))
+app.use(express.static('./assets/fonts'));
+app.use(express.static('./assets/images'));
+app.use(express.json());
 
 app.get('/', async (req, res) => {
   if (!req.signedCookies.login) {
     return res.redirect('/auth');
   }
 
-  /* get images with axios */
   const user = req.signedCookies.username;
   const ratingData = await axios.get(`${ API_URL }/getuserdata?user=${ user }`);
   const convertedData = [];
@@ -31,7 +32,7 @@ app.get('/', async (req, res) => {
 
   for (const key in ratingData.data) {
     const item = ratingData.data[key];
-    const image = `${ API_URL }/getimage?filename=${ item.image }`;
+    const image = `/getimage?filename=${ item.image }`;
 
     images.push(image);
     ratings.push(item.rating);
@@ -57,7 +58,6 @@ app.get('/', async (req, res) => {
 
 app.get('/auth', (req, res) => {
   const redirectUri = encodeURIComponent(`http://localhost:${ port }/auth/discord`);
-  console.log('Cookies: ', req.signedCookies);
 
   res.send(`
     <div style="margin: 300px auto;
@@ -85,7 +85,7 @@ app.get('/auth', (req, res) => {
       </a>
     </div>
   `)
-})
+});
 
 app.get('/auth/discord', async(req, res) => {
   const code = req.query.code;
@@ -110,11 +110,8 @@ app.get('/auth/discord', async(req, res) => {
         }
       });
 
-      console.log('Data: ', userDataResponse.data);
-
       const user = {
-        username: userDataResponse.data.username,
-        email: userDataResponse.data.email
+        username: userDataResponse.data.username
       }
 
       const expirationDuration = 3 * 24 * 60 * 60 * 1000; // 3 day
@@ -129,25 +126,54 @@ app.get('/auth/discord', async(req, res) => {
         maxAge: expirationDuration
       });
 
-      return res.send(`
-        <div style="margin: 300px auto;
-             max-width: 400px;
-             display: flex;
-             flex-direction: column;
-             align-items: center;
-             font-family: sans-serif;"
-        >
-          <h3>Welcome ${ user.username }</h3>
-          <span>Email: ${ user.email }</span>
-        </div>
-      `);
-      
+      return res.redirect('/');
   } catch (error) {
     console.log('Error', error);
     return res.send('Some error occurred!');
   } 
-})
+});
+
+app.get('/getimage', async (req, res) => {
+  const filename = req.query.filename;
+  const image = await axios.get(`${ API_URL }/getimage?filename=${ filename }`, { responseType: 'arraybuffer' });
+
+  return res.send(image.data);
+});
+
+app.get('/gettags', async (req, res) => {
+  const filename = req.query.filename;
+  const tags = await axios.get(`${ API_URL }/getimagetags?filename=${ filename }`);
+
+  return res.send(tags.data);
+});
+
+app.post('/updaterating', async (req, res) => {
+  const filename = req.body.filename;
+  const rating = req.body.rating;
+  const user = req.signedCookies.username;
+
+  try {
+    await axios.post(`${ API_URL }/updaterating`, { filename: filename, rating: rating, user: user });
+    return res.status(200).send({ success: true });
+  } catch (error) {
+    console.log('Error', error);
+    return res.status(400).send({ error: 'Some error occurred!' });
+  }
+});
+
+app.get('/getfilteredimages', async (req, res) => {
+  const filters = req.query.tags;
+  const user = req.signedCookies.username;
+
+  try {
+    const images = await axios.get(`${ API_URL }/getuserdata?user=${ user }&filters=${ filters }`);
+    return res.status(200).send(images.data);
+  } catch (error) {
+    console.log('Error', error);
+    return res.status(400).send({ error: 'Some error occurred!' });
+  }
+});
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${ port }`);
+  console.log(`App listening at http://localhost:${ port }`);
 });

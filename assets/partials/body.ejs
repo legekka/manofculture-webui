@@ -1,6 +1,29 @@
 
 <body>
+  <!-- Common svg definitions -->
+  <!-- Plus sign -->
+  <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: none">
+    <symbol id="plus" viewBox="0 0 24 24">
+      <path d="M5,12H19M12,5V19" style="fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></path>
+    </symbol>
+  </svg>
+  <!-- Minus sign -->
+  <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: none">
+    <symbol id="minus" viewBox="0 0 24 24">
+      <line x1="19" y1="12" x2="5" y2="12" style="fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></line>
+    </symbol>
+  </svg>
+  <!-- Image icon -->
+  <svg fill="currentColor" viewBox="-0.5 0.5 42 42" xmlns="http://www.w3.org/2000/svg" style="display: none">
+    <symbol id="picture" viewBox="-0.5 0.5 42 42">
+      <path d="M35.79 31.5c-.05-.04-5.181-7.971-6.72-7.971-1.51 0-4.391 3.851-4.391 3.851-2.24-2.31-7.2-8.87-8.661-8.87-1.509 0-7.449 8.12-10.789 12.99H35.79zm-8.979-17c0 2.04 1.649 3.69 3.689 3.69s3.689-1.65 3.689-3.69-1.649-3.69-3.689-3.69-3.689 1.65-3.689 3.69zM.5 7.5v27c0 2.52.51 3 3 3h34c2.471 0 3-.46 3-3v-27c0-2.46-.471-3-3-3h-34c-2.48 0-3 .43-3 3zm3 0h34v27h-34v-27z"/>
+    </symbol>
+  </svg>
+
   <div class="page-wrapper">
     <%- page %>
   </div>
+  
+  <%- include('./view-modal.ejs') %>
+  <%- include('./toast-message.ejs') %>
 </body>

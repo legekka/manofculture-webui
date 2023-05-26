@@ -1,3 +1,4 @@
+/* Colors & Fonts from Nord Theme: https://www.nordtheme.com/ */
 /* --- Fonts --- */
 @font-face {
   font-family: 'Rubik';
@@ -79,6 +80,7 @@
   font-display: fallback;
 }
 
+/* Resets from: https://github.com/hankchizljaw/modern-css-reset */
 /* --- Reset --- */
 *,
 *::before,
@@ -163,6 +165,12 @@ select {
   --accent-2: #88c0d0;
   --accent-3: #81a1c1;
   --accent-4: #5e81ac;
+
+  --highlight-1: #bf616a;
+  --highlight-2: #d08770;
+  --highlight-3: #ebcb8b;
+  --highlight-4: #a3be8c;
+  --highlight-5: #7c5b76;
 }
 
 /* --- Global --- */
@@ -224,10 +232,16 @@ p {
 }
 
 svg {
-  width: auto;
-  height: auto;
-  max-width: 1em;
-  max-height: 1em;
+  width: 2em;
+  height: 2em;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+img[src=""] {
+  visibility: hidden;
 }
 
 .text-center {
@@ -238,6 +252,15 @@ svg {
   max-width: 1440px;
   margin: 0 auto;
   padding: 50px;
+}
+
+.page-wrapper.blurred {
+  filter: blur(3px);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 @media screen and (max-width: 980px) {
@@ -289,6 +312,16 @@ svg {
   position: relative;
   overflow: hidden;
   border-radius: 1rem;
+  cursor: pointer;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.grid-item.empty {
+  opacity: 0;
+  visibility: hidden;
+  position: absolute;
 }
 
 .grid-item::before {
@@ -447,6 +480,9 @@ pagination-nav a {
 .pagination-nav > * {
   margin: 0 5px;
   user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 pagination-nav a:hover,
@@ -499,6 +535,18 @@ jump-to-page [data-action="open-controls"] {
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.15s ease-in-out;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+jump-to-page [data-action="open-controls"].open {
+  background-color: var(--accent-4);
+}
+
+jump-to-page [data-action="open-controls"].open:hover {
+  background-color: var(--accent-4);
 }
 
 jump-to-page [data-action="open-controls"]:hover,
@@ -508,10 +556,8 @@ jump-to-page [data-action="open-controls"]:focus-visible {
 }
 
 jump-to-page svg {
-  width: 2em;
-  height: 2em;
-  max-width: unset;
-  max-height: unset;
+  width: 1.8em;
+  height: 1.8em;
 }
 
 .jump-to-page__controls {
@@ -522,11 +568,13 @@ jump-to-page svg {
   justify-content: center;
   align-items: center;
   position: absolute;
-  left: 0;
+  left: 50%;
   top: 100%;
+  margin-top: 10px;
   transform: translateX(-50%);
-  padding: 1rem 0;
+  padding: 1rem 0.5rem;
   border-radius: 10px;
+  box-shadow: 3px 3px 8px 3px rgba(0, 0, 0, 0.2);
   background-color: var(--background-lightest);
   transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
@@ -544,3 +592,276 @@ jump-to-page svg {
 .jump-to-page__controls > * {
   flex-grow: 0;
 }
+
+.jump-to-page__controls input {
+  all: unset;
+  color: var(--font-color);
+  box-shadow: 0 4px 0 -2px var(--accent-4);
+  transition: box-shadow 0.2s ease-in-out;
+  text-align: center;
+  width: 3ch;
+  margin: 0 4px 0 2px;
+}
+
+.jump-to-page__controls input:active,
+.jump-to-page__controls input:focus-visible {
+  box-shadow: 0 4px 0 -1px var(--accent-3);
+}
+
+/* --- Rating modal component --- */
+view-modal {
+  opacity: 1;
+  visibility: visible;
+  position: fixed;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+view-modal::before {
+  content: '';
+  display: block;
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--background-color);
+  opacity: 0.5;
+  transition: opacity 0.2s ease-in-out;
+}
+
+view-modal.hidden {
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+view-modal.hidden::before {
+  opacity: 0;
+}
+
+.view-modal__inner {
+  display: grid;
+  grid-template-columns: auto minmax(350px, 1fr);
+  grid-gap: 2rem;
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  padding: 4rem;
+  max-width: 800px;
+  height: auto;
+  transform: translate(-50%, -50%);
+  background-color: var(--background-light);
+  border-radius: 10px;
+  box-shadow: 3px 3px 8px 3px rgba(0, 0, 0, 0.2);
+  opacity: 1;
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+view-modal.hidden .view-modal__inner {
+  opacity: 0;
+  transform: translate(-50%, -25%);
+}
+
+@media screen and (max-width: 680px) {
+  .view-modal__inner {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+    max-height: 800px;
+    overflow: auto
+  }
+}
+
+.view-modal__rating {
+  display: grid;
+  grid-auto-columns: auto;
+  grid-auto-flow: column;
+  grid-column-gap: 0.5rem;
+}
+
+.view-modal__rating input {
+  display: none;
+}
+
+.view-modal__image-container {
+  /*height: 0;
+  padding-bottom: calc(100% * var(--aspect-ratio, 1.25));*/
+  position: relative;
+  max-height: 768px;
+  margin: 0 auto;
+}
+
+.view-modal__image-container > img {
+  /*osition: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;*/
+  object-fit: contain;
+}
+
+.view-modal__info-container {
+  overflow: hidden;
+}
+
+.view-modal__info-container h3 {
+  font-size: 2.5rem;
+}
+
+.view-modal__close {
+  position: absolute;
+  right: 1.5rem;
+  top: 1.5rem;
+}
+
+.view-modal__inner [data-action="close-modal"] {
+  all: unset;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  transform: rotate(45deg);
+  transform-origin: center center;
+}
+
+.view-modal__inner input[type="radio"] + label {
+  position: relative;
+  opacity: 0.3;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.view-modal__inner input[type="radio"] + label::before,
+.view-modal__inner input[type="radio"] + label::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 20rem;
+  background-color: var(--background-lightest);
+  opacity: 1;
+  mix-blend-mode: color;
+  cursor: pointer;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.view-modal__inner input[type="radio"]:checked + label::before,
+.view-modal__inner input[type="radio"]:checked + label::after {
+  opacity: 0;
+}
+
+.view-modal__inner input[type="radio"]:hover + label {
+  opacity: 1;
+}
+
+.view-modal__inner input[type="radio"]:not(:checked):hover + label::before,
+.view-modal__inner input[type="radio"]:not(:checked):hover + label::after {
+  opacity: 0.5;
+}
+
+.view-modal__inner input[type="radio"]:checked + label {
+  opacity: 1;
+}
+
+.view-modal__filename {
+  display: flex;
+  align-items: center;
+  margin: 2rem 0 4rem 0;
+}
+
+.view-modal__filename svg {
+  fill: var(--accent-3);
+  margin-right: 1rem;
+  width: 3em;
+  height: 3em;
+}
+
+.view-modal__filename p {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 400;
+  overflow: hidden;
+  hyphens: auto;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 0 -2px var(--accent-4);
+}
+
+.view-modal__tags {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.view-modal__tags > * {
+  margin-right: 0.5rem;
+}
+
+.view-modal__tags .tag {
+  font-size: 1.2rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  background-color: var(--background-lightest);
+  color: var(--font-color);
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.view-modal__tags .tag.active {
+  background-color: var(--highlight-5);
+}
+
+/* --- Toast message component --- */
+toast-message {
+  position: fixed;
+  z-index: 5;
+  left: 50%;
+  bottom: 50px;
+  transform: translate(-50%, 150%);
+  background-color: var(--background-lightest);
+  border-radius: 10px;
+  box-shadow: 3px 3px 8px 3px rgba(0, 0, 0, 0.2);
+  padding: 1rem 2rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+toast-message.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+toast-message p {
+  margin: 0;
+  font-weight: 400;
+  font-size: 1.8rem;
+}
+
+toast-message[data-type="success"] {
+  background-color: var(--highlight-4);
+  color: var(--background-color);
+}
+
+toast-message[data-type="warning"] {
+  background-color: var(--highlight-3);
+  color: var(--background-color);
+}
+
+toast-message[data-type="error"] {
+  background-color: var(--highlight-1);
+}
+
