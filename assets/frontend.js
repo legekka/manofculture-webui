@@ -517,7 +517,7 @@ class ViewModal extends HTMLElement {
     tempImg.src = imageSrc;
 
     tempImg.onload = async function () {
-      const width = tempImg.width;
+      /*const width = tempImg.width;
       const height = tempImg.height;
       const aspectRatio = height / width;
       const maxViewportHeight = Math.round(window.innerHeight * 0.8);
@@ -528,7 +528,7 @@ class ViewModal extends HTMLElement {
       } else {
         this.imageContainer.style.maxWidth = 'unset';
         this.image.style.maxHeight = 'unset';
-      }
+      }*/
 
       const filename = imageSrc.split('=')[1];
       const tags = await fetch('/gettags?filename=' + filename, {
@@ -563,7 +563,7 @@ class ViewModal extends HTMLElement {
 
       this.tagsContainer.innerHTML = tagsHtml;
 
-      this.image.style.setProperty('aspect-ratio', aspectRatio);
+      //this.image.style.setProperty('aspect-ratio', aspectRatio);
       this.pageWrapper.classList.add('blurred');
       document.documentElement.classList.add('overflow-hidden');
       this.classList.remove('hidden');
@@ -624,8 +624,10 @@ class ToastMessage extends HTMLElement {
       return;
     }
 
-    if (document.querySelector(`toast-message[type="${ this.type }"].open`) !== null) {
-      return;
+    const existingSameTypeMessage = document.querySelector(`toast-message[type="${ this.type }"].open`);
+
+    if (existingSameTypeMessage !== null) {
+      existingSameTypeMessage.classList.remove('open');
     }
 
     const message = event.detail.message;

@@ -646,19 +646,18 @@ view-modal.hidden::before {
 }
 
 .view-modal__inner {
-  display: grid;
-  grid-template-columns: auto minmax(350px, 1fr);
-  grid-gap: 2rem;
+  display: flex;
   position: absolute;
   z-index: 4;
   left: 50%;
   top: 50%;
-  width: 100%;
-  padding: 4rem;
-  max-width: 800px;
+  width: calc(100% - 4rem);
   height: auto;
+  padding: 4rem;
+  max-width: 1350px;
+  max-height: 600px;
   transform: translate(-50%, -50%);
-  background-color: var(--background-light);
+  background-color: var(--background-lighter);
   border-radius: 10px;
   box-shadow: 3px 3px 8px 3px rgba(0, 0, 0, 0.2);
   opacity: 1;
@@ -668,15 +667,6 @@ view-modal.hidden::before {
 view-modal.hidden .view-modal__inner {
   opacity: 0;
   transform: translate(-50%, -25%);
-}
-
-@media screen and (max-width: 680px) {
-  .view-modal__inner {
-    grid-template-columns: 1fr;
-    max-width: 480px;
-    max-height: 800px;
-    overflow: auto
-  }
 }
 
 .view-modal__rating {
@@ -691,24 +681,47 @@ view-modal.hidden .view-modal__inner {
 }
 
 .view-modal__image-container {
-  /*height: 0;
-  padding-bottom: calc(100% * var(--aspect-ratio, 1.25));*/
-  position: relative;
-  max-height: 768px;
-  margin: 0 auto;
+  flex: 1;
+  margin: -4rem 0 -4rem -4rem;
+  background-color: var(--background-light);
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  overflow: hidden;
 }
 
 .view-modal__image-container > img {
-  /*osition: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;*/
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
+  margin: 0 auto;
 }
 
 .view-modal__info-container {
-  overflow: hidden;
+  flex: 1;
+  padding-left: 2rem;
+  max-width: 350px;
+}
+
+@media screen and (max-width: 680px) {
+  .view-modal__inner {
+    flex-direction: column;
+    max-width: 480px;
+    max-height: 800px;
+    overflow: auto;
+  }
+
+  .view-modal__image-container {
+    margin: -4rem -4rem 0 -4rem;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 0;
+    overflow: unset;
+  }
+
+  .view-modal__info-container {
+    padding-left: 0;
+    padding-top: 2rem;
+    max-width: 100%;
+  }
 }
 
 .view-modal__info-container h3 {
@@ -809,7 +822,7 @@ view-modal.hidden .view-modal__inner {
 }
 
 .view-modal__tags .tag {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   padding: 0.25rem 0.5rem;
   border-radius: 0.5rem;
   background-color: var(--background-lightest);
@@ -864,4 +877,3 @@ toast-message[data-type="warning"] {
 toast-message[data-type="error"] {
   background-color: var(--highlight-1);
 }
-
