@@ -47,7 +47,7 @@ function convertRating(imageRating) {
   return Number(Number(conversion / 10).toFixed(2));
 }
 
-document.addEventListener('lazyloaded', function(e){
+document.addEventListener('lazyloaded', function (e){
   if (e.target.getAttribute('src') === '') {
     return;
   }
@@ -55,110 +55,68 @@ document.addEventListener('lazyloaded', function(e){
   e.target.parentNode.classList.add('loaded');
 });
 
-class Pagination extends HTMLElement {
+class ImageGrid extends HTMLElement {
   constructor() {
     super();
 
-    this.paginationAmount = Number(this.dataset.paginationAmount);
-    this.paginationTypeControls = this.querySelectorAll('.pagination-controls input');
-    this.paginationNavContainer = this.querySelector('.pagination-nav');
-    this.currentURL = new URL(window.location.href);
-    this.currentPage = Number(this.currentURL.searchParams.get('page'));
+    this.maxImageCount = 60;
+    this.currentPage = 1;
+    this.currentTags = [];
+    
     this.gridItems = this.querySelectorAll('.grid-item');
-    this.imageElems = this.querySelectorAll('img');
-    this.activeTags = this.currentURL.searchParams.get('tags') ? this.currentURL.searchParams.get('tags').split(',') : [];
-    this.rawData = this.querySelector('script[type="application/json"]') ? JSON.parse(this.querySelector('script[type="application/json"]').innerText) : [];
-    this.jsonData = null;
+    this.imagesData = [];
 
-    if (this.nodeName !== 'PAGINATION-COMPONENT') {
-      return;
-    }
+    document.addEventListener('imagegrid:params:changed', this.getImagesData.bind(this));
+    document.addEventListener('imagegrid:images:loaded', this.onImagesLoaded.bind(this));
+    document.addEventListener('page:changed', this.handlePageChange.bind(this));
+    document.addEventListener('filter:tags:changed', this.handleFilterChange.bind(this));
 
-    if (this.activeTags.length > 0) {
-      this.getFilteredData().then((data) => {
-        this.jsonData = data;
-        this.render(this.jsonData);
-
-        document.dispatchEvent(new CustomEvent('data:set', { detail: { instance: this } }));
-      });
-    } else {
-      this.jsonData = this.rawData;
-      document.dispatchEvent(new CustomEvent('data:set', { detail: { instance: this } }));
-    }
+    this.getImagesData();
 
     for (const item of this.gridItems) {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', function () {
         const itemImg = item.querySelector('img');
         document.dispatchEvent(new CustomEvent('modal:open', { detail: { imageSrc: itemImg.getAttribute('src'), imageRating: itemImg.dataset.rating, gridItem: item } }));
       });
     }
-
-    if (!this.currentPage) {
-      this.currentPage = 1;
-      window.history.replaceState({}, '', `${ window.location.pathname }?page=${ this.currentPage }`);
-    }
-
-    for (const control of this.paginationTypeControls) {
-      control.addEventListener('change', () => {
-        document.dispatchEvent(new CustomEvent('pagination:changed', { detail: { instance: this } }));
-
-        this.render();
-      });
-    }
-
-    document.addEventListener('pagination:force:rerender', () => {
-      this.currentPage = event.detail.pageNumber;
-      this.render();
-    });
-
-    document.addEventListener('jumpto:changed:debounced', () => {
-      this.currentPage = event.detail.pageNumber;
-      document.dispatchEvent(new CustomEvent('paginationnav:force:rerender', { detail: { instance: this } }));
-    });
-
-    document.addEventListener('filter:tags:changed', () => {
-      const action = event.detail.action;
-      const tag = event.detail.tag;
-
-      if (action === 'add') {
-        this.activeTags.push(tag);
-      } else {
-        this.activeTags.splice(this.activeTags.indexOf(tag), 1);
-      }
-
-      this.currentPage = 1;
-      this.updateURL();
-
-      if (this.activeTags.length === 0) {
-        this.render();
-        this.scrollToTop();
-        document.dispatchEvent(new CustomEvent('data:set', { detail: { instance: this } }));
-      } else {
-        this.getFilteredData().then((filteredData) => {
-          this.render(filteredData);
-          this.scrollToTop();
-          document.dispatchEvent(new CustomEvent('data:set', { detail: { instance: this } }));
-        });
-      }
-    });
-
-    if (this.activeTags.length === 0) {
-      this.render();
-    }
   }
 
-  connectedCallback() {
-    if (this.nodeName !== 'PAGINATION-COMPONENT') {
+  async getImagesData() {
+    const currentUrl = new URL(window.location.href);
+    const urlParams = currentUrl.searchParams;
+
+    this.currentPage = urlParams.get('page') !== null ? Number(urlParams.get('page')) : 1;
+    this.currentTags = urlParams.get('filters') !== null ? urlParams.get('filters').split(',') : [];
+
+    const filtersQuery = this.currentTags.length > 0 ? `&filters=${ this.currentTags.join(',') }` : '';
+
+    const images = await fetch(`/getimages?&page=${ this.currentPage }${ filtersQuery }`);
+
+    if (images.status !== 200) {
+      this.imagesData = [];
       return;
     }
 
-    document.addEventListener('pagination:nav:load', () => {
-      document.dispatchEvent(new CustomEvent('pagination:changed', { detail: { instance: this } }));
-    });
+    const response = await images.json();
+
+    this.imagesData = response.images;
+
+    document.dispatchEvent(new CustomEvent('imagegrid:images:loaded'));
+    document.dispatchEvent(new CustomEvent('pagination:page:changed', { detail: { currentPage: this.currentPage, maxPages: response.max_page } }));
+    document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: this.currentPage } }));
+    document.dispatchEvent(new CustomEvent('jumpto:maximum:changed', { detail: { maxPages: response.max_page } }));
   }
 
-  get paginationType() {
-    return this.querySelector('.pagination-controls input:checked') ? this.querySelector('.pagination-controls input:checked').value : null;
+  unloadCurrentImages() {
+    for (const gridItem of this.gridItems) {
+      const image = gridItem.querySelector('img');
+      gridItem.classList.remove('loaded');
+
+      setTimeout(function () {
+        image.src = '';
+        image.classList.add('lazyload');
+      }, 200);
+    }
   }
 
   scrollToTop() {
@@ -168,176 +126,120 @@ class Pagination extends HTMLElement {
     });
   }
 
-  unloadCurrentImages() {
-    for (const image of this.imageElems) {
-      image.src = '';
-      image.parentNode.classList.remove('loaded');
-      image.classList.add('lazyload');
-    }
-  }
-
-  updateURL() {
-    const tagsQuery = this.activeTags.length > 0 ? `&tags=${ this.activeTags.join(',') }` : '';
-
-    window.history.replaceState({}, '', `${ window.location.pathname }?page=${ this.currentPage }${ tagsQuery }`);
-
-    this.currentURL = new URL(window.location.href);
-    document.dispatchEvent(new CustomEvent('pagination:pagenumber:changed', { detail: { instance: this } }));
-  }
-
-  render(filteredData = []) {
-    const currentPage = this.currentPage;
-    const images = filteredData.length > 0 ? 
-      filteredData.slice((currentPage - 1) * this.paginationAmount, currentPage * this.paginationAmount) : 
-      this.jsonData.slice((currentPage - 1) * this.paginationAmount, currentPage * this.paginationAmount);
-
-    if (filteredData.length > 0) {
-      this.jsonData = filteredData;
-    }
+  onImagesLoaded() {
+    const imageData = this.imagesData;
 
     for (let i = 0; i < this.gridItems.length; i++) {
-      if (i >= images.length) {
-        this.gridItems[i].classList.add('empty');
+      const gridItem = this.gridItems[i];
+      const imageElem = gridItem.querySelector('img');
+
+      if (i >= imageData.length || typeof imageData[i] === 'undefined') {
+        gridItem.classList.add('empty');
         continue;
       }
+      
+      const newImage = `/getimage?filename=${ imageData[i].image }`;
+      const newRating = convertRating(imageData[i].rating);
 
-      this.gridItems[i].classList.remove('empty');
-    }
+      gridItem.classList.remove('empty');
+      gridItem.classList.remove('loaded');
 
-    for (let i = 0; i < this.imageElems.length; i++) {
-      const currentImage = images[i];
+      imageElem.classList.add('transitioning');
 
-      if (!currentImage) {
-        continue;
-      }
-    }
-
-    for (let i = 0; i < this.imageElems.length; i++) {
-      const currentImage = images[i];
-      const currentImgElem = this.imageElems[i];
-
-      if (!currentImage) {
-        currentImgElem.classList.add('hidden');
-        continue;
-      }
-
-      currentImgElem.classList.remove('hidden');
-      currentImgElem.classList.add('transitioning');
-      currentImgElem.parentNode.classList.remove('loaded');
-
-      setTimeout(() => {
-        currentImgElem.src = currentImage.image;
-        currentImgElem.setAttribute('data-rating', convertRating(Number(currentImage.rating)));
-        currentImgElem.classList.add('lazyload');
+      setTimeout(function () {
+        imageElem.src = newImage
+        imageElem.setAttribute('data-rating', newRating);
+        imageElem.classList.add('lazyload');
       }, 200);
 
-      setTimeout(() => {
-        currentImgElem.classList.remove('transitioning');
+      setTimeout(function () {
+        imageElem.classList.remove('transitioning');
       }, 400);
     }
   }
 
-  async getFilteredData() {
-    const tags = this.activeTags.join(',');
+  handlePageChange(event) {
+    this.currentPage = typeof event.detail.newPage !== 'undefined' ? event.detail.newPage : this.currentPage;
+    this.currentTags = typeof event.detail.newTags !== 'undefined' ? event.detail.newTags : this.currentTags;
 
     this.unloadCurrentImages();
+    this.scrollToTop();
+    this.updateUrl();
 
-    return await fetch(`/getfilteredimages?tags=${ tags }`)
-    .then(response => response.json())
-    .then(data => {
-      for (const item of data) {
-        item.image = `/getimage?filename=${ item.image }`;
-      }
+    document.dispatchEvent(new CustomEvent('imagegrid:params:changed'));
+  }
 
-      return data;
-    });
+  handleFilterChange(event) {
+    this.currentPage = 1;
+    const action = event.detail.action;
+
+    if (action === 'add') {
+      this.currentTags.push(event.detail.tag);
+    } else {
+      this.currentTags.splice(this.currentTags.indexOf(event.detail.tag), 1);
+    }
+
+    this.unloadCurrentImages();
+    this.scrollToTop();
+    this.updateUrl();
+
+    document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: 1 } }));
+    document.dispatchEvent(new CustomEvent('imagegrid:params:changed'));
+  }
+
+  updateUrl() {
+    const currentUrl = new URL(window.location.href);
+    const urlParams = currentUrl.searchParams;
+
+    urlParams.set('page', this.currentPage);
+    this.currentTags.length > 0 ? urlParams.set('filters', this.currentTags.join(',')) : urlParams.delete('filters');
+
+    window.history.pushState({}, '', `${ currentUrl.origin }${ currentUrl.pathname }?${ urlParams.toString() }`);
   }
 }
 
-window.customElements.define('pagination-component', Pagination);
+window.customElements.define('image-grid', ImageGrid);
 
-class PaginationNav extends Pagination {
+class PaginationNav extends HTMLElement {
   constructor() {
     super();
 
-    this.firstInstance = document.querySelector('pagination-nav') === this;
+    this.currentPage = 1;
+    this.maxPages = 1;
 
-    document.addEventListener('pagination:changed', this.renderRemovePaginationNav.bind(this));
-    document.addEventListener('pagination:nav:rerendered', this.rerenderPaginationNav.bind(this));
-    document.addEventListener('pagination:pagenumber:changed', this.setActiveButton.bind(this));
-    document.addEventListener('paginationnav:force:rerender', this.renderPaginationNav.bind(this));
-    document.addEventListener('data:set', this.renderIntially.bind(this));
-  }
-
-  renderIntially() {
-    this.instance = event.detail.instance;
-
-    if (this.firstInstance) {
-      document.dispatchEvent(new CustomEvent('pagination:nav:load'));
-    }
-  }
-
-  renderRemovePaginationNav() {
-    this.instance = event.detail.instance;
-
-    if (this.instance.paginationType === 'pagination') {
-      this.querySelector('jump-to-page').classList.remove('hidden');
-      this.renderPaginationNav();
-    } else {
-      this.querySelector('jump-to-page').classList.add('hidden');
-      this.querySelector('.pagination-nav').innerHTML = '';
-    }
-  }
-
-  rerenderPaginationNav() {
-    if (event.target !== this) {
-      this.instance = event.detail.instance;
-      this.renderPaginationNav(true);
-    }
-  }
-
-  setActiveButton() {
-    const currentPage = this.instance.currentPage;
-    const navLinks = this.querySelectorAll('a');
-
-    for (const link of navLinks) {
-      link.classList.remove('active');
-
-      if (link.innerText === currentPage.toString()) {
-        link.classList.add('active');
-      }
-    }
+    document.addEventListener('pagination:page:changed', this.renderPaginationNav.bind(this));
   }
 
   addNavEventListeners() {
     const navLinks = this.querySelectorAll('a');
 
     for (const link of navLinks) {
-      link.addEventListener('click', (e) => {
+      link.addEventListener('click', function (e) {
         e.preventDefault();
         const targetPage = e.target.innerText;
 
         if (targetPage.includes('Previous')) {
-          this.instance.currentPage = Number(this.instance.currentPage) - 1;
+          this.currentPage = Number(this.currentPage) - 1;
         } else if (targetPage.includes('Next')) {
-          this.instance.currentPage = Number(this.instance.currentPage) + 1;
+          this.currentPage = Number(this.currentPage) + 1;
         } else {
-          this.instance.currentPage = Number(targetPage);
+          this.currentPage = Number(targetPage);
         }
 
-        this.instance.render();
-        this.instance.scrollToTop();
-        this.instance.updateURL();
-        this.renderPaginationNav();
-      });
+        document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: this.currentPage } }));
+        document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: this.currentPage } }));
+      }.bind(this));
     }
   }
 
-  renderPaginationNav(outsideCall = false) {
-    const currentPage = this.instance.currentPage;
-    const pagesAmount = Math.ceil(this.instance.jsonData.length / this.instance.paginationAmount);
+  renderPaginationNav(event) {
+    this.currentPage = event.detail.currentPage;
+    this.maxPages = event.detail.maxPages;
 
-    const isNextNav = currentPage < pagesAmount;
+    const currentPage = this.currentPage;
+    const maxPages = this.maxPages;
+
+    const isNextNav = currentPage < maxPages;
     const isPrevNav = currentPage > 1;
     const navElem = document.createElement('nav');
     const neighbourPages = 2;
@@ -361,7 +263,7 @@ class PaginationNav extends Pagination {
     }
 
     const lowerBound = currentPage - neighbourPages > 0 ? currentPage - neighbourPages : 1;
-    const upperBound = currentPage + neighbourPages < pagesAmount ? currentPage + neighbourPages : pagesAmount;
+    const upperBound = currentPage + neighbourPages < maxPages ? currentPage + neighbourPages : maxPages;
 
     for (let i = lowerBound; i <= upperBound; i++) {
       const elem = document.createElement('a');
@@ -389,16 +291,12 @@ class PaginationNav extends Pagination {
 
     this.querySelector('.pagination-nav').innerHTML = navElem.innerHTML;
     this.addNavEventListeners();
-
-    if (!outsideCall) {
-      document.dispatchEvent(new CustomEvent('pagination:nav:rerendered', { detail: { instance: this.instance } }));
-    }
   }
 }
 
 window.customElements.define('pagination-nav', PaginationNav);
 
-class JumpToPage extends Pagination {
+class JumpToPage extends HTMLElement {
   constructor() {
     super();
 
@@ -407,22 +305,22 @@ class JumpToPage extends Pagination {
     this.input = this.querySelector('input');
     this.plus = this.querySelector('[data-action="add"]');
     this.minus = this.querySelector('[data-action="subtract"]');
-    this.maxPages = 9999;
-    
+    this.maxPages = 1;
+
     this.opener.addEventListener('click', this.toggleControls.bind(this));
     this.plus.addEventListener('click', this.incrementPage.bind(this));
     this.minus.addEventListener('click', this.decrementPage.bind(this));
     this.input.addEventListener('input', this.onInput.bind(this));
 
-    document.addEventListener('jumpto:changed', debounce((event) => { this.handlePageChange(event); }).bind(this));
-    document.addEventListener('data:set', this.setMaximum.bind(this));
-
-    this.input.value = this.currentPage;
+    document.addEventListener('jumpto:changed', debounce(function (event) { this.handlePageChange(event); }).bind(this));
+    document.addEventListener('jumpto:maximum:changed', this.setMaximum.bind(this));
+    document.addEventListener('jumpto:page:changed', this.setPage.bind(this));
   }
 
-  setMaximum() {
-    const instance = event.detail.instance;
-    this.maxPages = Math.ceil(instance.jsonData.length / instance.paginationAmount);
+  setMaximum(event) {
+    this.maxPages = event.detail.maxPages;
+
+    this.input.setAttribute('max', this.maxPages);
   }
 
   toggleControls() {
@@ -445,28 +343,18 @@ class JumpToPage extends Pagination {
   }
 
   handlePageChange(event) {
-    const newPage = Number(this.input.value) > 1 ? Number(this.input.value) : 1;
-    this.currentPage = newPage;
-
-    if (event.detail.instance === this) {
-      const jumpToPageInputs = document.querySelectorAll('jump-to-page input');
-
-      for (const input of jumpToPageInputs) {
-        if (input !== this.input) {
-          input.value = newPage;
-        }
-      }
-
-      this.updatePage(newPage);
+    if (event.detail.instance !== this) {
+      return;
     }
 
-    document.dispatchEvent(new CustomEvent('jumpto:changed:debounced', { detail: { pageNumber: newPage } }));
+    const newPage = Number(this.input.value) > 1 ? Number(this.input.value) : 1;
+    
+    document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: newPage } }));
+    document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: newPage } }));
   }
 
-  updatePage(newPage) {
-    document.dispatchEvent(new CustomEvent('pagination:force:rerender', { detail: { pageNumber: newPage } }));
-    this.scrollToTop();
-    this.updateURL();
+  setPage(event) {
+    this.input.value = event.detail.newPage;
   }
 }
 
@@ -475,7 +363,7 @@ window.customElements.define('jump-to-page', JumpToPage);
 class ViewModal extends HTMLElement {
   constructor() {
     super();
-    
+
     this.imageContainer = this.querySelector('.view-modal__image-container');
     this.image = this.imageContainer.querySelector('img');
     this.filenameContainer = this.querySelector('.view-modal__filename p');
@@ -493,10 +381,10 @@ class ViewModal extends HTMLElement {
       ratingControl.addEventListener('change', this.sendRatingChangedEvent.bind(this));
     }
 
-    document.addEventListener('rating:changed', debounce((event) => { this.handleRatingChange(event); }, 1000).bind(this));
+    document.addEventListener('rating:changed', debounce(function (event) { this.handleRatingChange(event); }).bind(this));
   }
 
-  openModal() {
+  openModal(event) {
     this.gridItem = event.detail.gridItem;
 
     const imageSrc = event.detail.imageSrc;
@@ -517,19 +405,6 @@ class ViewModal extends HTMLElement {
     tempImg.src = imageSrc;
 
     tempImg.onload = async function () {
-      /*const width = tempImg.width;
-      const height = tempImg.height;
-      const aspectRatio = height / width;
-      const maxViewportHeight = Math.round(window.innerHeight * 0.8);
-
-      if (aspectRatio > 1) {
-        this.imageContainer.style.maxWidth = (maxViewportHeight / aspectRatio) + 'px';
-        this.image.style.maxHeight = maxViewportHeight + 'px';
-      } else {
-        this.imageContainer.style.maxWidth = 'unset';
-        this.image.style.maxHeight = 'unset';
-      }*/
-
       const filename = imageSrc.split('=')[1];
       const tags = await fetch('/gettags?filename=' + filename, {
         method: 'GET',
@@ -544,7 +419,7 @@ class ViewModal extends HTMLElement {
 
       this.filenameContainer.innerText = filename;
 
-      const UrlActiveTags = new URL(window.location.href).searchParams.get('tags') || '';
+      const UrlActiveTags = new URL(window.location.href).searchParams.get('filters') || '';
       const activeTags = UrlActiveTags.split(',');
 
       let tagsHtml = '';
@@ -563,7 +438,6 @@ class ViewModal extends HTMLElement {
 
       this.tagsContainer.innerHTML = tagsHtml;
 
-      //this.image.style.setProperty('aspect-ratio', aspectRatio);
       this.pageWrapper.classList.add('blurred');
       document.documentElement.classList.add('overflow-hidden');
       this.classList.remove('hidden');
@@ -576,7 +450,7 @@ class ViewModal extends HTMLElement {
     this.classList.add('hidden');
   }
 
-  sendRatingChangedEvent() {
+  sendRatingChangedEvent(event) {
     document.dispatchEvent(new CustomEvent('rating:changed', { detail: { rating: event.target.value } }));
   }
 
@@ -619,7 +493,7 @@ class ToastMessage extends HTMLElement {
     document.addEventListener('toast:show', this.showToast.bind(this));
   }
 
-  showToast() {
+  showToast(event) {
     if (this.type !== event.detail.type) {
       return;
     }
@@ -635,9 +509,9 @@ class ToastMessage extends HTMLElement {
     this.messageContainer.innerText = message;
     this.classList.add('open');
 
-    setTimeout(() => {
+    setTimeout(function () {
       this.classList.remove('open');
-    }, 3000);
+    }.bind(this), 3000);
   }
 }
 

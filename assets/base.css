@@ -240,10 +240,6 @@ svg {
   overflow: hidden;
 }
 
-img[src=""] {
-  visibility: hidden;
-}
-
 .text-center {
   text-align: center;
 }
@@ -343,6 +339,7 @@ img[src=""] {
   height: 100%;
   animation: image-loading 2s ease-in-out infinite alternate;
   transition: opacity 0.2s ease-in-out;
+  z-index: 1;
 }
 
 .grid-item.loaded::before {
@@ -383,8 +380,8 @@ img.lazyloaded::before {
   display: none;
 }
 
-/* --- Pagination component --- */
-pagination-component {
+/* --- Image grid component --- */
+image-grid {
   display: block;
   position: relative;
   padding-top: 100px;
@@ -497,19 +494,18 @@ pagination-nav a.active {
 
 img {
   opacity: 1;
-  visibility: visible;
-  transition: opacity 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out !important;
 }
 
-.hidden {
+.hidden,
+img.transitioning  {
   opacity: 0 !important;
-  visibility: hidden !important;
-  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out !important;
 }
 
-img.transitioning {
-  opacity: 0;
-  transition: opacity 0.2s ease-in-out;
+img[src=""] {
+  all: unset;
+  transition: all 0.2s ease-in-out !important;
 }
 
 /* --- Jump to page component --- */

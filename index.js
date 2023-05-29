@@ -25,7 +25,7 @@ app.get('/', async (req, res) => {
   }
 
   const user = req.signedCookies.username;
-  const ratingData = await axios.get(`${ API_URL }/getuserdata?user=${ user }`);
+  /*const ratingData = await axios.get(`${ API_URL }/getuserdata?user=${ user }`);
   const convertedData = [];
   const images = [];
   const ratings = [];
@@ -37,9 +37,9 @@ app.get('/', async (req, res) => {
     images.push(image);
     ratings.push(item.rating);
     convertedData.push({ image: image, rating: item.rating });
-  }
+  }*/
 
-  ejs.renderFile('./assets/pages/booru.ejs', { data: JSON.stringify(convertedData), images: images, ratings: ratings }, (err, bodyContent) => {
+  ejs.renderFile('./assets/pages/booru.ejs', (err, bodyContent) => {
     if (err) {
       console.log('Error: ', err);
       return res.send('Some error occurred!');
@@ -167,6 +167,23 @@ app.get('/getfilteredimages', async (req, res) => {
 
   try {
     const images = await axios.get(`${ API_URL }/getuserdata?user=${ user }&filters=${ filters }`);
+    return res.status(200).send(images.data);
+  } catch (error) {
+    console.log('Error', error);
+    return res.status(400).send({ error: 'Some error occurred!' });
+  }
+});
+
+app.get('/getimages', async (req, res) => {
+  const user = req.signedCookies.username;
+  const filters = req.query.filters;
+  const page = req.query.page;
+
+  const pageQuery = typeof page !== 'undefined' ? `&page=${ page }` : '';
+  const filtersQuery = typeof filters !== 'undefined' ? `&filters=${ filters }` : '';
+
+  try {
+    const images = await axios.get(`${ API_URL }/getuserdata2?user=${ user }${ filtersQuery }${ pageQuery }`);
     return res.status(200).send(images.data);
   } catch (error) {
     console.log('Error', error);
