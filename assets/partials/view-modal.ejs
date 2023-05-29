@@ -8,9 +8,19 @@
       </button>
     </div>
     <div class="view-modal__image-container">
+      <button type="button" data-action="previous-image">
+        <svg>
+          <use xlink:href="#arrow-left"></use>
+        </svg>
+      </button>
       <img src="" class="lazyload">
+      <button type="button" data-action="next-image">
+        <svg>
+          <use xlink:href="#arrow-right"></use>
+        </svg>
+      </button>
     </div>
-    <div class="view-modal__info-container">
+    <div class="view-modal__info-container hidden">
       <h3>Image rating</h3>
       <div class="view-modal__rating">
         <input type="radio" name="rating" id="rating_0" value="0">
@@ -50,6 +60,7 @@
           <!-- This is rendered by JavaScript -->
         </p>
       </div>
+      <h3>Tags</h3>
       <div class="view-modal__tags">
         <!-- This is rendered by JavaScript -->
       </div>

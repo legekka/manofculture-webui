@@ -346,6 +346,29 @@ svg {
   opacity: 0;
 }
 
+.grid-item::after {
+  position: absolute;
+  content: attr(data-rating);
+  bottom: 0.5rem;
+  right: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--background-lighter);
+  border-radius: 1rem;
+  font-size: 1.2rem;
+  line-height: 1em;
+  z-index: 1;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.grid-item.loaded::after {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: .4s;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
 @keyframes image-loading {
   0% {
     background-position: 0 0;
@@ -378,6 +401,25 @@ img.lazyloaded {
 
 img.lazyloaded::before {
   display: none;
+}
+
+/* --- Discord button --- */
+.discord-button {
+  font-size: 4rem;
+  text-decoration: none;
+  color: var(--font-color);
+  background: var(--accent-4);
+  padding: 2rem;
+  margin-top: 5rem;
+  border-radius: 1rem;
+  font-weight: 500;
+  transition: background .2s ease-in-out;
+}
+
+.discord-button:hover,
+.discord-button:active,
+.discord-button:focus-visible {
+  background: var(--accent-3);
 }
 
 /* --- Image grid component --- */
@@ -696,6 +738,7 @@ view-modal.hidden::before {
 .view-modal__inner {
   display: flex;
   position: absolute;
+  overflow: hidden;
   z-index: 4;
   left: 50%;
   top: 50%;
@@ -735,6 +778,8 @@ view-modal.hidden .view-modal__inner {
   border-top-left-radius: 10px;
   border-bottom-left-radius: 10px;
   overflow: hidden;
+  position: relative;
+  display: flex;
 }
 
 .view-modal__image-container > img {
@@ -744,22 +789,59 @@ view-modal.hidden .view-modal__inner {
   margin: 0 auto;
 }
 
+.view-modal__image-container > button {
+  all: unset;
+  position: absolute;
+  cursor: pointer;
+  padding: 2rem;
+  background-color: var(--background-lighter);
+  opacity: 0.8;
+  border-radius: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.view-modal__image-container > button > svg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.view-modal__image-container > button[data-action="previous-image"] {
+  left: 2rem;
+}
+
+.view-modal__image-container > button[data-action="next-image"] {
+  right: 2rem;
+}
+
 .view-modal__info-container {
   flex: 1;
   padding-left: 2rem;
   max-width: 350px;
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.view-modal__info-container.hidden {
+  transform: translateY(10%);
+  opacity: 0;
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
 }
 
 @media screen and (max-width: 680px) {
   .view-modal__inner {
     flex-direction: column;
+    padding: 2rem;
     max-width: 480px;
     max-height: 800px;
     overflow: auto;
   }
 
   .view-modal__image-container {
-    margin: -4rem -4rem 0 -4rem;
+    margin: -4rem -2rem 0 -2rem;
     border-top-right-radius: 10px;
     border-bottom-left-radius: 0;
     overflow: unset;
@@ -778,6 +860,7 @@ view-modal.hidden .view-modal__inner {
 
 .view-modal__close {
   position: absolute;
+  z-index: 1;
   right: 1.5rem;
   top: 1.5rem;
 }
@@ -794,6 +877,8 @@ view-modal.hidden .view-modal__inner {
   -ms-user-select: none;
   transform: rotate(45deg);
   transform-origin: center center;
+  background: var(--background-lighter);
+  border-radius: 2em;
 }
 
 .view-modal__inner input[type="radio"] + label {

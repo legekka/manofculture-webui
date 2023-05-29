@@ -76,7 +76,7 @@ class ImageGrid extends HTMLElement {
     for (const item of this.gridItems) {
       item.addEventListener('click', function () {
         const itemImg = item.querySelector('img');
-        document.dispatchEvent(new CustomEvent('modal:open', { detail: { imageSrc: itemImg.getAttribute('src'), imageRating: itemImg.dataset.rating, gridItem: item } }));
+        document.dispatchEvent(new CustomEvent('modal:open', { detail: { imageSrc: itemImg.getAttribute('src'), imageRating: item.dataset.rating, gridItem: item } }));
       });
     }
   }
@@ -148,8 +148,8 @@ class ImageGrid extends HTMLElement {
       imageElem.classList.add('transitioning');
 
       setTimeout(function () {
+        gridItem.setAttribute('data-rating', newRating);
         imageElem.src = newImage
-        imageElem.setAttribute('data-rating', newRating);
         imageElem.classList.add('lazyload');
       }, 200);
 
@@ -372,15 +372,25 @@ class ViewModal extends HTMLElement {
     super();
 
     this.imageContainer = this.querySelector('.view-modal__image-container');
+    this.infoContainer = this.querySelector('.view-modal__info-container');
     this.image = this.imageContainer.querySelector('img');
     this.filenameContainer = this.querySelector('.view-modal__filename p');
     this.tagsContainer = this.querySelector('.view-modal__tags');
     this.ratingControls = this.querySelectorAll('input[type="radio"]');
     this.closeButton = this.querySelector('[data-action="close-modal"]');
+    this.nextButton = this.querySelector('[data-action="next-image"]');
+    this.previousButton = this.querySelector('[data-action="previous-image"]');
+    this.nextImage = null;
+    this.previousImage = null;
+    this.nextImageRating = null;
+    this.previousImageRating = null;
     this.pageWrapper = document.querySelector('.page-wrapper');
     this.gridItem = null;
 
+    this.addEventListener('click', this.blurModal.bind(this));
     this.closeButton.addEventListener('click', this.closeModal.bind(this));
+    this.nextButton.addEventListener('click', this.changeImage.bind(this, 'next'));
+    this.previousButton.addEventListener('click', this.changeImage.bind(this, 'previous'));
 
     document.addEventListener('modal:open', this.openModal.bind(this));
 
@@ -391,13 +401,7 @@ class ViewModal extends HTMLElement {
     document.addEventListener('rating:changed', debounce(function (event) { this.handleRatingChange(event); }).bind(this));
   }
 
-  openModal(event) {
-    this.gridItem = event.detail.gridItem;
-
-    const imageSrc = event.detail.imageSrc;
-    const imageRating = Number(event.detail.imageRating) || 0;
-    const convertedRating = convertRating(imageRating);
-
+  setRatingControls(convertedRating) {
     for (const control of this.ratingControls) {
       if (control.value === convertedRating.toString()) {
         control.checked = true;
@@ -405,6 +409,48 @@ class ViewModal extends HTMLElement {
         control.checked = false;
       }
     }
+  }
+
+  async setTags(filename) {
+    const tags = await fetch('/gettags?filename=' + filename, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(function (response) {
+      return response.json();
+    }).then(function (data) {
+      return data.tags;
+    });
+
+    const UrlActiveTags = new URL(window.location.href).searchParams.get('filters') || '';
+    const activeTags = UrlActiveTags.split(',');
+
+    let tagsHtml = '';
+    for (const tag of tags) {
+      const tagElem = document.createElement('image-tag');
+      const isActiveTag = activeTags.includes(tag);
+      tagElem.innerText = tag;
+      tagElem.classList.add('tag');
+
+      if (isActiveTag) {
+        tagElem.classList.add('active');
+      }
+
+      tagsHtml += tagElem.outerHTML;
+    }
+
+    this.tagsContainer.innerHTML = tagsHtml;
+  }
+
+  openModal(event) {
+    this.gridItem = event.detail.gridItem;
+
+    const imageSrc = event.detail.imageSrc;
+    const imageRating = Number(event.detail.imageRating) || 0;
+    const convertedRating = convertRating(imageRating);
+
+    this.setRatingControls(convertedRating);
 
     this.image.src = imageSrc;
 
@@ -413,41 +459,28 @@ class ViewModal extends HTMLElement {
 
     tempImg.onload = async function () {
       const filename = imageSrc.split('=')[1];
-      const tags = await fetch('/gettags?filename=' + filename, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }).then(function (response) {
-        return response.json();
-      }).then(function (data) {
-        return data.tags;
-      });
+
+      const neighbourImages = await this.getNeibourImages(filename);
+
+      this.previousButton.classList.add('hidden');
+      this.nextButton.classList.add('hidden');
+
+      if (neighbourImages.prev_image !== null) {
+        this.previousButton.classList.remove('hidden');
+      }
+
+      if (neighbourImages.next_image !== null) {
+        this.nextButton.classList.remove('hidden');
+      }
 
       this.filenameContainer.innerText = filename;
 
-      const UrlActiveTags = new URL(window.location.href).searchParams.get('filters') || '';
-      const activeTags = UrlActiveTags.split(',');
-
-      let tagsHtml = '';
-      for (const tag of tags) {
-        const tagElem = document.createElement('image-tag');
-        const isActiveTag = activeTags.includes(tag);
-        tagElem.innerText = tag;
-        tagElem.classList.add('tag');
-
-        if (isActiveTag) {
-          tagElem.classList.add('active');
-        }
-
-        tagsHtml += tagElem.outerHTML;
-      }
-
-      this.tagsContainer.innerHTML = tagsHtml;
+      this.setTags(filename);
 
       this.pageWrapper.classList.add('blurred');
       document.documentElement.classList.add('overflow-hidden');
       this.classList.remove('hidden');
+      this.infoContainer.classList.remove('hidden');
     }.bind(this);
   }
 
@@ -455,6 +488,14 @@ class ViewModal extends HTMLElement {
     this.pageWrapper.classList.remove('blurred');
     document.documentElement.classList.remove('overflow-hidden');
     this.classList.add('hidden');
+  }
+
+  blurModal(event) {
+    if (event.target.closest('.view-modal__inner') !== null) {
+      return;
+    }
+
+    this.closeModal();
   }
 
   sendRatingChangedEvent(event) {
@@ -478,13 +519,105 @@ class ViewModal extends HTMLElement {
       return response.json();
     }).then(function (data) {
       if (data.success === true) {
-        this.gridItem.querySelector('img').dataset.rating = rating;
+        this.gridItem.dataset.rating = rating;
 
         document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'success', message: 'Rating updated' } }));
       } else {
         document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: 'Rating update failed' } }));
       }
     }.bind(this));
+  }
+
+  async getNeibourImages(fileName) {
+    const currentTags = new URL(window.location.href).searchParams.get('filters') || '';
+    const tagsQuery = currentTags !== '' ? `&filters=${ currentTags }` : '';
+
+    this.nextButton.classList.add('hidden');
+    this.previousButton.classList.add('hidden');
+
+    const response = await fetch(`/getimageneighbours?filename=${ fileName }${ tagsQuery }`);
+    const result = await response.json();
+
+    if (result.next_image !== null) {
+      this.nextImage = result.next_image.image;
+      this.nextImageRating = result.next_image.rating;
+      this.nextButton.classList.remove('hidden');
+    } else {
+      this.nextImage = null;
+    }
+
+    if (result.prev_image !== null) {
+      this.previousImage = result.prev_image.image;
+      this.previousImageRating = result.prev_image.rating;
+      this.previousButton.classList.remove('hidden');
+    } else {
+      this.previousImage = null;
+    }
+
+    return result;
+  }
+
+  changeImage(direction) {
+    const currentTags = new URL(window.location.href).searchParams.get('filters') || '';
+    const currentPage = new URL(window.location.href).searchParams.get('page') || 1;
+    const currentFileName = this.filenameContainer.innerText;
+
+    const tagsQuery = currentTags !== '' ? `&filters=${ currentTags }` : '';
+
+    this.image.classList.add('hidden');
+    this.infoContainer.classList.add('hidden');
+    this.nextButton.disabled = true;
+    this.previousButton.disabled = true;
+
+    if (direction === 'next') {
+      this.getNeibourImages(currentFileName).then(function (result) {
+        this.nextButton.disabled = false;
+        this.previousButton.disabled = false;
+
+        const supposedPage = Math.ceil((result.position + 1) / 60);
+
+        setTimeout(function () {
+          this.setTags(this.nextImage).then(function () {
+            this.setRatingControls(convertRating(this.nextImageRating));
+
+            this.filenameContainer.innerText = this.nextImage;
+            this.infoContainer.classList.remove('hidden');
+
+            this.image.src = `/getimage?filename=${ this.nextImage }`;
+            this.image.classList.add('lazyload');
+            this.image.classList.remove('hidden');
+          }.bind(this));
+        }.bind(this), 200);
+
+        if (supposedPage !== Number(currentPage)) {
+          document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: supposedPage } }));
+        }
+      }.bind(this));
+    } else {
+      this.getNeibourImages(currentFileName).then(function (result) {
+        this.nextButton.disabled = false;
+        this.previousButton.disabled = false;
+
+        const supposedPage = Math.ceil((result.position - 1) / 60);
+
+        setTimeout(function () {
+          this.setTags(this.previousImage).then(function () {
+            this.setRatingControls(convertRating(this.previousImageRating));
+            
+            this.filenameContainer.innerText = this.previousImage;
+            this.infoContainer.classList.remove('hidden');
+
+            this.image.src = `/getimage?filename=${ this.previousImage }`;
+            this.image.classList.add('lazyload');
+            this.image.classList.remove('hidden');
+          }.bind(this));
+        }.bind(this), 200);
+
+        if (supposedPage !== Number(currentPage)) {
+          document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: supposedPage } }));
+        }
+      }.bind(this));
+    }
   }
 }
 

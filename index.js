@@ -1,24 +1,32 @@
+/* --- .env --- */
 require('dotenv').config();
 
+/* --- Reqs --- */
 const express = require('express');
 const axios = require('axios');
 const cookieParser = require('cookie-parser');
 const ejs = require('ejs');
 
-const app = express();
-const port = 3000;
-
+/* --- .env variables --- */
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const COOKIE_SECRET = process.env.COOKIE_SECRET;
 const API_URL = process.env.API_URL;
+const APP_URL = process.env.APP_URL;
+const APP_PORT = process.env.APP_PORT;
 
+/* --- Global consts --- */
+const app = express();
+const fullAppUrl = `${ APP_URL }${ typeof APP_PORT !== 'undefined' ? `:${ APP_PORT }` : '' }`;
+
+/* --- Express packages --- */
 app.use(cookieParser(COOKIE_SECRET));
 app.use(express.static('./assets'));
 app.use(express.static('./assets/fonts'));
 app.use(express.static('./assets/images'));
 app.use(express.json());
 
+/* --- Main page (After Auth) --- */
 app.get('/', async (req, res) => {
   if (!req.signedCookies.login) {
     return res.redirect('/auth');
@@ -41,35 +49,26 @@ app.get('/', async (req, res) => {
   });
 });
 
+/* --- Authentication --- */
 app.get('/auth', (req, res) => {
-  const redirectUri = encodeURIComponent(`http://localhost:${ port }/auth/discord`);
+  const encodedAppUrl = encodeURIComponent(`${ fullAppUrl }/auth/discord`);
+  const redirectUri = `https://discord.com/api/oauth2/authorize?client_id=${ CLIENT_ID }&redirect_uri=${ encodedAppUrl }&response_type=code&scope=identify`;
 
-  res.send(`
-    <div style="margin: 300px auto;
-         max-width: 400px;
-         display: flex;
-         flex-direction: column;
-         align-items: center;
-         font-family: sans-serif;"
-    >
-      <h3>Welcome to Discord OAuth NodeJS App</h3>
-      <p>Click on the below button to get started!</p>
-      <a href="https://discord.com/api/oauth2/authorize?client_id=${ CLIENT_ID }&redirect_uri=${ redirectUri }&response_type=code&scope=identify%20email"
-         style="outline: none;
-         padding: 10px;
-         border: none;
-         font-size: 20px;
-         margin-top: 20px;
-         border-radius: 8px;
-         background: #6D81CD;
-         cursor:pointer;
-         text-decoration: none;
-         color: white;"
-      >
-        Login with Discord
-      </a>
-    </div>
-  `)
+  ejs.renderFile('./assets/pages/auth.ejs', { redirectUri: redirectUri }, (err, bodyContent) => {
+    if (err) {
+      console.log('Error: ', err);
+      return res.send('Some error occurred!');
+    }
+
+    ejs.renderFile('./assets/index.ejs', { page: bodyContent }, (err, html) => {
+      if (err) {
+        console.log('Error: ', err);
+        return res.send('Some error occurred!');
+      }
+
+      return res.send(html);
+    });
+  });
 });
 
 app.get('/auth/discord', async(req, res) => {
@@ -80,7 +79,7 @@ app.get('/auth/discord', async(req, res) => {
   params.append('client_secret', CLIENT_SECRET);
   params.append('grant_type', 'authorization_code');
   params.append('code', code);
-  params.append('redirect_uri', `http://localhost:${ port }/auth/discord`);
+  params.append('redirect_uri', `${ fullAppUrl }/auth/discord`);
 
   try {
       const response = await axios.post('https://discord.com/api/oauth2/token', params);
@@ -118,6 +117,7 @@ app.get('/auth/discord', async(req, res) => {
   } 
 });
 
+/* --- Frontend to Backend endpoints --- */
 app.get('/getimages', async (req, res) => {
   const user = req.signedCookies.username;
   const filters = req.query.filters;
@@ -163,6 +163,23 @@ app.post('/updaterating', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`App listening at http://localhost:${ port }`);
+app.get('/getimageneighbours', async (req, res) => {
+  const user = req.signedCookies.username;
+  const filename = req.query.filename;
+  const filters = req.query.filters;
+
+  const filtersQuery = typeof filters !== 'undefined' ? `&filters=${ filters }` : '';
+
+  try {
+    const images = await axios.get(`${ API_URL }/getimageneighbours?filename=${ filename }&user=${ user }${ filtersQuery }`);
+    return res.status(200).send(images.data);
+  } catch (error) {
+    console.log('Error', error);
+    return res.status(400).send({ error: 'Some error occurred!' });
+  }
+});
+
+/* --- Start app --- */
+app.listen(APP_PORT, () => {
+  console.log(`App listening at ${ fullAppUrl }`);
 });
