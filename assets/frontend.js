@@ -105,6 +105,7 @@ class ImageGrid extends HTMLElement {
     document.dispatchEvent(new CustomEvent('pagination:page:changed', { detail: { currentPage: this.currentPage, maxPages: response.max_page } }));
     document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: this.currentPage } }));
     document.dispatchEvent(new CustomEvent('jumpto:maximum:changed', { detail: { maxPages: response.max_page } }));
+    document.dispatchEvent(new CustomEvent('tagsearch:tags:set', { detail: { tags: this.currentTags } }));
   }
 
   unloadCurrentImages() {
@@ -175,6 +176,12 @@ class ImageGrid extends HTMLElement {
 
     if (action === 'add') {
       this.currentTags.push(event.detail.tag);
+    } else if (action === 'change') {
+      if (event.detail.tags === '') {
+        this.currentTags = [];
+      } else {
+        this.currentTags = event.detail.tags.split(',');
+      }
     } else {
       this.currentTags.splice(this.currentTags.indexOf(event.detail.tag), 1);
     }
@@ -542,3 +549,51 @@ class ImageTag extends HTMLElement {
 }
 
 window.customElements.define('image-tag', ImageTag);
+
+class TagSearch extends HTMLElement {
+  constructor() {
+    super();
+
+    this.opener = this.querySelector('[data-action="open-controls"]');
+    this.controls = this.querySelector('.tag-search__controls');
+    this.input = this.querySelector('input');
+    this.searchButton = this.querySelector('[data-action="search"]');
+
+    this.opener.addEventListener('click', this.toggleControls.bind(this));
+    this.searchButton.addEventListener('click', this.handleSearch.bind(this));
+    this.input.addEventListener('keydown', this.handleInputSearch.bind(this));
+
+    document.addEventListener('tagsearch:tags:set', this.setTags.bind(this));
+  }
+
+  toggleControls() {
+    this.opener.classList.toggle('open');
+    this.controls.classList.toggle('hidden');
+  }
+
+  handleSearch() {
+    const searchQuery = this.input.value;
+
+    document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: 1 } }));
+    document.dispatchEvent(new CustomEvent('filter:tags:changed', { detail: { action: 'change', tags: searchQuery } }));
+  }
+
+  handleInputSearch() {
+    if (event.keyCode !== 13) {
+      return;
+    }
+
+    const searchQuery = this.input.value;
+
+    document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: 1 } }));
+    document.dispatchEvent(new CustomEvent('filter:tags:changed', { detail: { action: 'change', tags: searchQuery } }));
+  }
+
+  setTags(event) {
+    const tags = event.detail.tags;
+
+    this.input.value = tags.join(',');
+  }
+}
+
+window.customElements.define('tag-search', TagSearch);

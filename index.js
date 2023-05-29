@@ -24,21 +24,6 @@ app.get('/', async (req, res) => {
     return res.redirect('/auth');
   }
 
-  const user = req.signedCookies.username;
-  /*const ratingData = await axios.get(`${ API_URL }/getuserdata?user=${ user }`);
-  const convertedData = [];
-  const images = [];
-  const ratings = [];
-
-  for (const key in ratingData.data) {
-    const item = ratingData.data[key];
-    const image = `/getimage?filename=${ item.image }`;
-
-    images.push(image);
-    ratings.push(item.rating);
-    convertedData.push({ image: image, rating: item.rating });
-  }*/
-
   ejs.renderFile('./assets/pages/booru.ejs', (err, bodyContent) => {
     if (err) {
       console.log('Error: ', err);
@@ -133,6 +118,23 @@ app.get('/auth/discord', async(req, res) => {
   } 
 });
 
+app.get('/getimages', async (req, res) => {
+  const user = req.signedCookies.username;
+  const filters = req.query.filters;
+  const page = req.query.page;
+
+  const pageQuery = typeof page !== 'undefined' ? `&page=${ page }` : '';
+  const filtersQuery = typeof filters !== 'undefined' ? `&filters=${ filters }` : '';
+
+  try {
+    const images = await axios.get(`${ API_URL }/getuserdata?user=${ user }${ filtersQuery }${ pageQuery }`);
+    return res.status(200).send(images.data);
+  } catch (error) {
+    console.log('Error', error);
+    return res.status(400).send({ error: 'Some error occurred!' });
+  }
+});
+
 app.get('/getimage', async (req, res) => {
   const filename = req.query.filename;
   const image = await axios.get(`${ API_URL }/getimage?filename=${ filename }`, { responseType: 'arraybuffer' });
@@ -155,36 +157,6 @@ app.post('/updaterating', async (req, res) => {
   try {
     await axios.post(`${ API_URL }/updaterating`, { filename: filename, rating: rating, user: user });
     return res.status(200).send({ success: true });
-  } catch (error) {
-    console.log('Error', error);
-    return res.status(400).send({ error: 'Some error occurred!' });
-  }
-});
-
-app.get('/getfilteredimages', async (req, res) => {
-  const filters = req.query.tags;
-  const user = req.signedCookies.username;
-
-  try {
-    const images = await axios.get(`${ API_URL }/getuserdata?user=${ user }&filters=${ filters }`);
-    return res.status(200).send(images.data);
-  } catch (error) {
-    console.log('Error', error);
-    return res.status(400).send({ error: 'Some error occurred!' });
-  }
-});
-
-app.get('/getimages', async (req, res) => {
-  const user = req.signedCookies.username;
-  const filters = req.query.filters;
-  const page = req.query.page;
-
-  const pageQuery = typeof page !== 'undefined' ? `&page=${ page }` : '';
-  const filtersQuery = typeof filters !== 'undefined' ? `&filters=${ filters }` : '';
-
-  try {
-    const images = await axios.get(`${ API_URL }/getuserdata2?user=${ user }${ filtersQuery }${ pageQuery }`);
-    return res.status(200).send(images.data);
   } catch (error) {
     console.log('Error', error);
     return res.status(400).send({ error: 'Some error occurred!' });

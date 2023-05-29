@@ -504,11 +504,14 @@ img.transitioning  {
 }
 
 img[src=""] {
-  all: unset;
-  transition: all 0.2s ease-in-out !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  transition: unset !important;
 }
 
 /* --- Jump to page component --- */
+/* --- And --- */
+/* --- Tag search component --- */
 jump-to-page {
   position: absolute;
   right: 0;
@@ -516,15 +519,24 @@ jump-to-page {
   transform: translateY(-50%);
 }
 
+tag-search {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 @media screen and (max-width: 980px) {
-  jump-to-page {
+  jump-to-page,
+  tag-search {
     top: -100%;
     transform: unset;
     font-size: 1.4rem;
   }
 }
 
-jump-to-page [data-action="open-controls"] {
+jump-to-page [data-action="open-controls"],
+tag-search [data-action="open-controls"] {
   all: unset;
   font-size: 1.6rem;
   padding: 1.5rem;
@@ -537,23 +549,33 @@ jump-to-page [data-action="open-controls"] {
   -ms-user-select: none;
 }
 
-jump-to-page [data-action="open-controls"].open {
+jump-to-page [data-action="open-controls"].open,
+tag-search [data-action="open-controls"].open {
   background-color: var(--accent-4);
 }
 
-jump-to-page [data-action="open-controls"].open:hover {
+jump-to-page [data-action="open-controls"].open:hover,
+tag-search [data-action="open-controls"].open:hover {
   background-color: var(--accent-4);
 }
 
 jump-to-page [data-action="open-controls"]:hover,
 jump-to-page [data-action="open-controls"]:active,
-jump-to-page [data-action="open-controls"]:focus-visible {
+jump-to-page [data-action="open-controls"]:focus-visible,
+tag-search [data-action="open-controls"]:hover,
+tag-search [data-action="open-controls"]:active,
+tag-search [data-action="open-controls"]:focus-visible {
   background-color: var(--accent-3);
 }
 
 jump-to-page svg {
   width: 1.8em;
   height: 1.8em;
+}
+
+tag-search svg {
+  margin-left: 1rem;
+  cursor: pointer;
 }
 
 .jump-to-page__controls {
@@ -575,7 +597,26 @@ jump-to-page svg {
   transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
 
-.jump-to-page__controls button {
+.tag-search__controls {
+  font-size: 1.4rem;
+  opacity: 1;
+  visibility: visible;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 10px;
+  padding: 1.4rem 2rem;
+  border-radius: 10px;
+  box-shadow: 3px 3px 8px 3px rgba(0, 0, 0, 0.2);
+  background-color: var(--background-lightest);
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.jump-to-page__controls button,
+.tag-search__controls button {
   all: unset;
   display: flex;
   justify-content: center;
@@ -599,8 +640,19 @@ jump-to-page svg {
   margin: 0 4px 0 2px;
 }
 
+.tag-search__controls input {
+  all: unset;
+  color: var(--font-color);
+  box-shadow: 0 4px 0 -2px var(--accent-4);
+  transition: box-shadow 0.2s ease-in-out;
+  text-align: left;
+  width: 30ch;
+}
+
 .jump-to-page__controls input:active,
-.jump-to-page__controls input:focus-visible {
+.jump-to-page__controls input:focus-visible,
+.tag-search__controls input:active,
+.tag-search__controls input:focus-visible {
   box-shadow: 0 4px 0 -1px var(--accent-3);
 }
 

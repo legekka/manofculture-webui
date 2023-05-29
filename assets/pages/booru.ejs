@@ -9,6 +9,18 @@
     </div>
 
     <pagination-nav>
+      <tag-search>
+        <button type="button" data-action="open-controls">
+          Search tags...
+        </button>
+        <div class="tag-search__controls hidden">
+          <input type="text">
+          <svg data-action="search">
+            <use xlink:href="#search"></use>
+          </svg>
+        </div>
+      </tag-search>
+
       <jump-to-page>
         <button type="button" data-action="open-controls">
           Jump to...
