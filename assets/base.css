@@ -348,16 +348,20 @@ svg {
 
 .grid-item::after {
   position: absolute;
-  content: attr(data-rating);
+  content: attr(data-rank);
   bottom: 0.5rem;
   right: 0.5rem;
+  width: 3.5rem;
   padding: 0.5rem 1rem;
-  background-color: var(--background-lighter);
+  background-color: var(--background-lightest);
   border-radius: 1rem;
   font-size: 1.2rem;
   line-height: 1em;
   z-index: 1;
   opacity: 0;
+  text-align: center;
+  font-weight: 500;
+  box-shadow: 2px 2px 0 0px var(--rank-color);
   visibility: hidden;
   transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
@@ -367,6 +371,22 @@ svg {
   visibility: visible;
   transition-delay: .4s;
   transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.rank__triangle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 0;
+  width: 6.5rem;
+  height: 6.5rem;
+  background: linear-gradient(
+    -45deg,
+    var(--background-light) 0%,
+    var(--background-light) 50%,
+    transparent 50%,
+    transparent 100%
+  );
 }
 
 @keyframes image-loading {
@@ -387,6 +407,16 @@ svg {
   height: 100%;
   opacity: 0;
   object-fit: cover;
+  clip-path: polygon(
+    15% 0%,
+    100% 0%,
+    100% 0%,
+    100% 80%,
+    80% 100%,
+    15% 100%,
+    0% 100%,
+    0% 0%
+  ); /* lmao */
 }
 
 img.lazyload {
@@ -658,6 +688,11 @@ tag-search svg {
   box-shadow: 3px 3px 8px 3px rgba(0, 0, 0, 0.2);
   background-color: var(--background-lightest);
   transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.jump-to-page__controls.hidden,
+.tag-search__controls.hidden {
+  pointer-events: none;
 }
 
 .tag-search__controls {
@@ -1073,6 +1108,73 @@ view-stats.hidden .view-stats__inner {
   z-index: 1;
   right: 1.5rem;
   top: 1.5rem;
+}
+
+.view_stats__diagram-container {
+  width: 100%;
+  min-height: 600px;
+  max-width: 600px;
+  margin: -4rem -4rem -4rem auto;
+}
+
+.view-stats__inner h3 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.view-stats__inner h3:not(:first-child) {
+  margin-top: 5rem;
+}
+
+.view-stats__info-container p span {
+  font-weight: 500;
+}
+
+.view-stats__current-training {
+  position: relative;
+  background-color: var(--background-light);
+  padding: 1rem;
+  font-size: 1.2rem;
+  line-height: 3rem;
+  border-radius: 1rem;
+  font-weight: 500;
+  box-shadow: 0 0 8px 3px rgba(0, 0, 0, 0.2);
+  animation: training-pulse 1s ease-in-out infinite alternate;
+  border: 1px solid;
+}
+
+.view-stats__current-training.hidden {
+  height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+@keyframes training-pulse {
+  0% {
+    border-color: rgba(235, 203, 139, 0);
+  }
+  100% {
+    border-color: rgba(235, 203, 139, 1);
+  }
+}
+
+@media screen and (max-width: 980px) {
+  .view-stats__inner {
+    flex-direction: column-reverse;
+    padding: 2rem;
+    max-width: 480px;
+    max-height: 800px;
+    overflow: auto;
+  }
+
+  .view_stats__diagram-container {
+    margin: -2rem -2rem 2rem -2rem;
+    max-width: unset;
+    height: 400px;
+    min-height: unset;
+    width: calc(100% + 4rem);
+    overflow: unset;
+  }
 }
 
 /* --- Toast message component --- */

@@ -8,6 +8,7 @@
 
   <link rel="stylesheet" href="base.css">
   <script type="text/javascript" src="lazysizes.min.js" async=""></script>
+  <script type="text/javascript" src="echarts.min.js" async="" onload="window.echartsLoaded = true"></script>
   <script type="text/javascript" src="frontend.js" defer></script>
 
   <script>
@@ -22,6 +23,7 @@
       lazyClass: 'lazyload',
       loadedClass: 'lazyloaded',
     };
-
+    window.rankColors = ["#cc1a9d", "#00afbf", "#83d81c", "#e8b73f", "#fb8a5a", "#e95356", "#d5d5d5"];
+    window.echartsLoaded = false;
   </script>
 </head>

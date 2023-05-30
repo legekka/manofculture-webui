@@ -47,6 +47,44 @@ function convertRating(imageRating) {
   return Number(Number(conversion / 10).toFixed(2));
 }
 
+function ratingToRank(rating) {
+  switch (rating) {
+    case 0:
+      return 'F';
+    case 0.17:
+      return 'D';
+    case 0.33:
+      return 'C';
+    case 0.5:
+      return 'B';
+    case 0.67:
+      return 'A';
+    case 0.83:
+      return 'S';
+    case 1:
+      return 'SS';
+  }
+}
+
+function getRankColor(rank) {
+  switch (rank) {
+    case 'F':
+      return window.rankColors[6];
+    case 'D':
+      return window.rankColors[5];
+    case 'C':
+      return window.rankColors[4];
+    case 'B':
+      return window.rankColors[3];
+    case 'A':
+      return window.rankColors[2];
+    case 'S':
+      return window.rankColors[1];
+    case 'SS':
+      return window.rankColors[0];
+  }
+}
+
 document.addEventListener('lazyloaded', function (e){
   if (e.target.getAttribute('src') === '') {
     return;
@@ -141,6 +179,8 @@ class ImageGrid extends HTMLElement {
 
       const newImage = `/getimage?filename=${ imageData[i].image }`;
       const newRating = convertRating(imageData[i].rating);
+      const newRank = ratingToRank(newRating);
+      const newRankColor = getRankColor(newRank);
 
       gridItem.classList.remove('empty');
       gridItem.classList.remove('loaded');
@@ -149,6 +189,8 @@ class ImageGrid extends HTMLElement {
 
       setTimeout(function () {
         gridItem.setAttribute('data-rating', newRating);
+        gridItem.setAttribute('data-rank', newRank);
+        gridItem.style.setProperty('--rank-color', newRankColor);
         imageElem.src = newImage
         imageElem.classList.add('lazyload');
       }, 200);
@@ -522,7 +564,11 @@ class ViewModal extends HTMLElement {
       return response.json();
     }).then(function (data) {
       if (data.success === true) {
+        const rank = ratingToRank(rating);
+
         this.gridItem.dataset.rating = rating;
+        this.gridItem.dataset.rank = rank;
+        this.gridItem.style.setAttribute('--rank-color', getRankColor(rank));
 
         document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'success', message: 'Rating updated' } }));
       } else {
@@ -631,8 +677,13 @@ class ViewStats extends HTMLElement {
     this.opener = document.querySelector('[data-action="open-stats"]');
     this.closeButton = this.querySelector('[data-action="close-stats"]');
     this.statsContainer = this.querySelector('.view-stats__inner');
-    this.statsInfoContainer = this.querySelector('.view-stats__info-content');
+    this.ratingInfoContainer = this.querySelector('.view-stats__rating-info');
+    this.backendInfoContainer = this.querySelector('.view-stats__backend-info');
+    this.statsInfoCurrentTraining = this.querySelector('.view-stats__current-training');
+    this.diagram = null;
+    this.diagramContainer = this.querySelector('.view_stats__diagram-container');
     this.pageWrapper = document.querySelector('.page-wrapper');
+    this.resizeEventListener = debounce(function () { this.resizeChart() }.bind(this), 250);
 
     this.addEventListener('click', this.blurModal.bind(this));
     this.opener.addEventListener('click', this.openStats.bind(this));
@@ -641,18 +692,25 @@ class ViewStats extends HTMLElement {
 
   openStats() {
     fetch('/getstats').then(function (response) {
-      console.log("yay.")
       return response.json();
     }).then(function (data) {
+      if (window.echartsLoaded === true) {
+        this.diagram = this.loadChart(data);
+        this.setDiagram(this.diagram);
+
+        this.resizeChart();
+
+        window.addEventListener('resize', this.resizeEventListener);
+      }
+
       this.setInfo(data);
-      this.setDiagram(data);
+
+      this.classList.remove('hidden');
+      this.opener.classList.add('open');
+
+      this.pageWrapper.classList.add('blurred');
+      document.documentElement.classList.add('overflow-hidden');
     }.bind(this));
-
-    this.classList.remove('hidden');
-    this.opener.classList.add('open');
-
-    this.pageWrapper.classList.add('blurred');
-    document.documentElement.classList.add('overflow-hidden');
   }
 
   blurModal(event) {
@@ -663,43 +721,114 @@ class ViewStats extends HTMLElement {
     this.closeStats();
   }
 
+  resizeChart() {
+    this.diagram.chart.resize();
+  }
+
   closeStats() {
     this.classList.add('hidden');
+    this.statsInfoCurrentTraining.classList.add('hidden');
     this.opener.classList.remove('open');
-
     this.pageWrapper.classList.remove('blurred');
     document.documentElement.classList.remove('overflow-hidden');
+
+    window.removeEventListener('resize', this.resizeEventListener);
   }
 
   setInfo(data) {
-    const responseData = {
-      raternnpUpToDate: data.RaterNNP_up_to_date,
-      raternnUpToDate: data.RaterNNP_up_to_date,
-      imageCount: data.image_count,
-      trainingStatus: data.trainer === null || !data.trainer.is_training ? 'Not training' : 'Training',
-    }
+    const ratingInfo = {
+      "Image Count": data.image_count
+    };
+    const backendData = {
+      "Personal model status": data.RaterNNP_up_to_date === true ? 'Up to date' : 'Outdated',
+      "Global model status": data.RaterNNP_up_to_date === true ? 'Up to date' : 'Outdated',
+      "Training status": (data.trainer === null || !data.trainer.is_training) ? 'Not training' : 'Training',
+    };
 
     if (data.trainer !== null && data.trainer.is_training) {
-      responseData['trainingProgress'] = data.trainer.progress;
-      responseData['currentUser'] = data.trainer.current_user;
+      this.statsInfoCurrentTraining.classList.remove('hidden');
+      this.statsInfoCurrentTraining.querySelector('.current-user').innerHTML = `Current user: ${ data.trainer.current_user}`;
+      this.statsInfoCurrentTraining.querySelector('.current-progress').innerHTML = `Progress: ${ data.trainer.progress }`;
     }
 
-    const newElem = document.createElement('div');
-    
-    let html = '';
+    let ratingHtml = '';
+    let backendHtml = '';
 
-    for (const key in responseData) {
-      html += `<p>${ key }: ${ responseData[key] }</p>`;
+    for (const key in ratingInfo) {
+      ratingHtml += `<p>${ key }: <span>${ ratingInfo[key] }</span></p>`;
     }
-    
-    newElem.innerHTML = html;
 
-    this.statsInfoContainer.innerHTML = newElem.outerHTML; 
+    for (const key in backendData) {
+      backendHtml += `<p>${ key }: <span>${ backendData[key] }</span></p>`;
+    }
+
+    this.ratingInfoContainer.innerHTML = ratingHtml;
+    this.backendInfoContainer.innerHTML = backendHtml; 
+  }
+
+  loadChart(data) {
+    const ratingDistribution = data.rating_distribution;
+    const ratings = [
+      { name: "SS", value: ratingDistribution[6] },
+      { name: "S", value: ratingDistribution[5] },
+      { name: "A", value: ratingDistribution[4] },
+      { name: "B", value: ratingDistribution[3] },
+      { name: "C", value: ratingDistribution[2] },
+      { name: "D", value: ratingDistribution[1] },
+      { name: "F", value: ratingDistribution[0] }
+    ];
+    const colors = window.rankColors;
+    const chartConfig = {
+      title: {
+        text: 'Rating distribution',
+        left: 'center',
+        top: 15,
+      },
+      tooltip: {
+        trigger: 'item'
+      },
+      series: [
+        {
+          type: 'pie',
+          radius: '70%',
+          data: ratings,
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+          },
+          label: {
+            show: true,
+            formatter: function (params) { return Math.round(params.percent) + '%'; },
+            position: 'inside',
+            fontWeight: 'bold',
+          }
+        }
+      ],
+      legend: {
+        orient: 'vertical',
+        left: 5,
+        top: 15
+      },
+      color: colors,
+      backgroundColor: '#3b4252'
+    };
+
+    const chart = window.echarts.init(this.diagramContainer, 'dark', { resize: true });
+
+    return {
+      chart: chart,
+      chartConfig: chartConfig
+    };
   }
 
   setDiagram(data) {
-    const ratingDistribution = data.rating_distribution;
-    // TODO
+    const chart = data.chart;
+    const chartConfig = data.chartConfig;
+
+    chart.setOption(chartConfig);
   }
 }
 
