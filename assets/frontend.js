@@ -624,6 +624,87 @@ class ViewModal extends HTMLElement {
 
 window.customElements.define('view-modal', ViewModal);
 
+class ViewStats extends HTMLElement {
+  constructor() {
+    super();
+
+    this.opener = document.querySelector('[data-action="open-stats"]');
+    this.closeButton = this.querySelector('[data-action="close-stats"]');
+    this.statsContainer = this.querySelector('.view-stats__inner');
+    this.statsInfoContainer = this.querySelector('.view-stats__info-content');
+    this.pageWrapper = document.querySelector('.page-wrapper');
+
+    this.addEventListener('click', this.blurModal.bind(this));
+    this.opener.addEventListener('click', this.openStats.bind(this));
+    this.closeButton.addEventListener('click', this.closeStats.bind(this));
+  }
+
+  openStats() {
+    fetch('/getstats').then(function (response) {
+      console.log("yay.")
+      return response.json();
+    }).then(function (data) {
+      this.setInfo(data);
+      this.setDiagram(data);
+    }.bind(this));
+
+    this.classList.remove('hidden');
+    this.opener.classList.add('open');
+
+    this.pageWrapper.classList.add('blurred');
+    document.documentElement.classList.add('overflow-hidden');
+  }
+
+  blurModal(event) {
+    if (event.target.closest('.view-stats__inner') !== null) {
+      return;
+    }
+
+    this.closeStats();
+  }
+
+  closeStats() {
+    this.classList.add('hidden');
+    this.opener.classList.remove('open');
+
+    this.pageWrapper.classList.remove('blurred');
+    document.documentElement.classList.remove('overflow-hidden');
+  }
+
+  setInfo(data) {
+    const responseData = {
+      raternnpUpToDate: data.RaterNNP_up_to_date,
+      raternnUpToDate: data.RaterNNP_up_to_date,
+      imageCount: data.image_count,
+      trainingStatus: data.trainer === null || !data.trainer.is_training ? 'Not training' : 'Training',
+    }
+
+    if (data.trainer !== null && data.trainer.is_training) {
+      responseData['trainingProgress'] = data.trainer.progress;
+      responseData['currentUser'] = data.trainer.current_user;
+    }
+
+    const newElem = document.createElement('div');
+    
+    let html = '';
+
+    for (const key in responseData) {
+      html += `<p>${ key }: ${ responseData[key] }</p>`;
+    }
+    
+    newElem.innerHTML = html;
+
+    this.statsInfoContainer.innerHTML = newElem.outerHTML; 
+  }
+
+  setDiagram(data) {
+    const ratingDistribution = data.rating_distribution;
+    // TODO
+  }
+}
+
+window.customElements.define('view-stats', ViewStats);
+
 class ToastMessage extends HTMLElement {
   constructor() {
     super();

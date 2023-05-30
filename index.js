@@ -179,6 +179,18 @@ app.get('/getimageneighbours', async (req, res) => {
   }
 });
 
+app.get('/getstats', async (req, res) => {
+  const user = req.signedCookies.username;
+  
+  try {
+    const stats = await axios.get(`${ API_URL }/getstats?user=${ user }`);
+    return res.status(200).send(stats.data);
+  } catch (error) {
+    console.log('Error', error);
+    return res.status(400).send({ error: 'Some error occurred!' });
+  }
+});
+
 /* --- Start app --- */
 app.listen(APP_PORT, () => {
   console.log(`App listening at ${ fullAppUrl }`);
