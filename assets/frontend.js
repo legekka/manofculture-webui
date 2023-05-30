@@ -138,7 +138,7 @@ class ImageGrid extends HTMLElement {
         gridItem.classList.add('empty');
         continue;
       }
-      
+
       const newImage = `/getimage?filename=${ imageData[i].image }`;
       const newRating = convertRating(imageData[i].rating);
 
@@ -337,11 +337,13 @@ class JumpToPage extends HTMLElement {
 
   incrementPage() {
     this.input.value = Number(this.input.value) + 1 > this.maxPages ? this.maxPages : Number(this.input.value) + 1;
+
     document.dispatchEvent(new CustomEvent('jumpto:changed', { detail: { instance: this } }));
   }
 
   decrementPage() {
     this.input.value = Number(this.input.value) > 1 ? Number(this.input.value) - 1 : 1;
+
     document.dispatchEvent(new CustomEvent('jumpto:changed', { detail: { instance: this } }));
   }
 
@@ -430,6 +432,7 @@ class ViewModal extends HTMLElement {
     for (const tag of tags) {
       const tagElem = document.createElement('image-tag');
       const isActiveTag = activeTags.includes(tag);
+
       tagElem.innerText = tag;
       tagElem.classList.add('tag');
 
@@ -562,8 +565,6 @@ class ViewModal extends HTMLElement {
     const currentPage = new URL(window.location.href).searchParams.get('page') || 1;
     const currentFileName = this.filenameContainer.innerText;
 
-    const tagsQuery = currentTags !== '' ? `&filters=${ currentTags }` : '';
-
     this.image.classList.add('hidden');
     this.infoContainer.classList.add('hidden');
     this.nextButton.disabled = true;
@@ -603,7 +604,7 @@ class ViewModal extends HTMLElement {
         setTimeout(function () {
           this.setTags(this.previousImage).then(function () {
             this.setRatingControls(convertRating(this.previousImageRating));
-            
+
             this.filenameContainer.innerText = this.previousImage;
             this.infoContainer.classList.remove('hidden');
 
@@ -672,10 +673,12 @@ class ImageTag extends HTMLElement {
     if (this.active) {
       this.classList.remove('active');
       this.active = false;
+
       document.dispatchEvent(new CustomEvent('filter:tags:changed', { detail: { action: 'remove', tag: currentTag } }));
     } else {
       this.classList.add('active');
       this.active = true;
+
       document.dispatchEvent(new CustomEvent('filter:tags:changed', { detail: { action: 'add', tag: currentTag } }));
     }
   }
@@ -711,7 +714,7 @@ class TagSearch extends HTMLElement {
     document.dispatchEvent(new CustomEvent('filter:tags:changed', { detail: { action: 'change', tags: searchQuery } }));
   }
 
-  handleInputSearch() {
+  handleInputSearch(event) {
     if (event.keyCode !== 13) {
       return;
     }

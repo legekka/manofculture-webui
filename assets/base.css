@@ -322,7 +322,7 @@ svg {
 
 .grid-item::before {
   background: linear-gradient(
-  105deg, 
+    105deg, 
     var(--background-color) 0%, 
     var(--background-light) 25%, 
     var(--background-lighter) 50%,
@@ -405,7 +405,7 @@ img.lazyloaded::before {
 
 /* --- Discord button --- */
 .discord-button {
-  font-size: 4rem;
+  font-size: 3rem;
   text-decoration: none;
   color: var(--font-color);
   background: var(--accent-4);
@@ -413,13 +413,21 @@ img.lazyloaded::before {
   margin-top: 5rem;
   border-radius: 1rem;
   font-weight: 500;
-  transition: background .2s ease-in-out;
+  white-space: nowrap;
+  margin-top: 2em;
+  transition: background-color .2s ease-in-out;
+}
+
+@media screen and (max-width: 680px) {
+  .discord-button {
+    font-size: 2rem;
+  }
 }
 
 .discord-button:hover,
 .discord-button:active,
 .discord-button:focus-visible {
-  background: var(--accent-3);
+  background-color: var(--accent-3);
 }
 
 /* --- Image grid component --- */
