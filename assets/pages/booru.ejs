@@ -1,4 +1,3 @@
-<h1 class="text-center">Man of Culture WebUI</h1>
 <div class="container">
   <image-grid data-pagination-amount="60">
     <div class="pagination-controls">
@@ -7,25 +6,8 @@
       <input type="radio" class="custom-radio" name="pagination_type" value="pagination" id="pagination_per_page" checked="">
       <label for="pagination_per_page">Per page</label>
     </div>
-    <div class="open-stats">
-      <button type="button" data-action="open-stats">
-        Stats
-      </button>
-    </div>
     
     <pagination-nav>
-      <tag-search>
-        <button type="button" data-action="open-controls">
-          Search tags...
-        </button>
-        <div class="tag-search__controls hidden">
-          <input type="text">
-          <svg data-action="search">
-            <use xlink:href="#search"></use>
-          </svg>
-        </div>
-      </tag-search>
-
       <jump-to-page>
         <button type="button" data-action="open-controls">
           Jump to...
@@ -56,7 +38,7 @@
       <% for (let i = 0; i < 60; i++) { %>
         <div class="grid-item">
           <img src="" class="lazyload">
-          <div class="rank__triangle"></div>
+          <div class="rank__background"></div>
         </div>
       <% } %>
     </div>

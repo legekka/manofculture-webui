@@ -69,19 +69,40 @@ function ratingToRank(rating) {
 function getRankColor(rank) {
   switch (rank) {
     case 'F':
-      return window.rankColors[6];
+      return {
+        rankColor: window.rankColors[6],
+        rankColorDark: window.rankColorsDark[6]
+      };
     case 'D':
-      return window.rankColors[5];
+      return {
+        rankColor: window.rankColors[5],
+        rankColorDark: window.rankColorsDark[5]
+      };
     case 'C':
-      return window.rankColors[4];
+      return {
+        rankColor: window.rankColors[4],
+        rankColorDark: window.rankColorsDark[4]
+      };
     case 'B':
-      return window.rankColors[3];
+      return {
+        rankColor: window.rankColors[3],
+        rankColorDark: window.rankColorsDark[3]
+      };
     case 'A':
-      return window.rankColors[2];
+      return {
+        rankColor: window.rankColors[2],
+        rankColorDark: window.rankColorsDark[2]
+      };
     case 'S':
-      return window.rankColors[1];
+      return {
+        rankColor: window.rankColors[1],
+        rankColorDark: window.rankColorsDark[1]
+      };
     case 'SS':
-      return window.rankColors[0];
+      return {
+        rankColor: window.rankColors[0],
+        rankColorDark: window.rankColorsDark[0]
+      };
   }
 }
 
@@ -92,6 +113,59 @@ document.addEventListener('lazyloaded', function (e){
 
   e.target.parentNode.classList.add('loaded');
 });
+
+class StickyNavigation extends HTMLElement {
+  constructor() {
+    super();
+
+    this.boundary = 200;
+    this.previousPosition = 0;
+    this.opener = this.querySelector('[data-action="open-sidemenu"]');
+    this.sideMenu = document.querySelector('sidebar-navigation');
+
+    this.opener.addEventListener('click', this.toggleSidemenu.bind(this));
+    window.addEventListener('scroll', debounce(function () { this.changeNavStage(); }, 25).bind(this));
+  }
+
+  changeNavStage() {
+    const currentPosition = window.pageYOffset;
+
+    if (currentPosition > this.previousPosition && currentPosition > this.boundary) {
+      this.classList.add('closed');
+    } else {
+      this.classList.remove('closed');
+    }
+
+    this.previousPosition = currentPosition;
+  }
+
+  toggleSidemenu() {
+    this.classList.toggle('force-open');
+    this.sideMenu.classList.toggle('open');
+    document.documentElement.classList.toggle('overflow-hidden');
+  }
+}
+
+window.customElements.define('sticky-navigation', StickyNavigation);
+
+class SidebarNavigation extends HTMLElement {
+  constructor() {
+    super();
+
+    this.closeButton = this.querySelector('[data-action="close-sidemenu"]');
+
+    this.closeButton.addEventListener('click', this.closeSidemenu.bind(this));
+
+    document.addEventListener('sidemenu:close', this.closeSidemenu.bind(this));
+  }
+
+  closeSidemenu() {
+    this.classList.remove('open');
+    document.documentElement.classList.remove('overflow-hidden');
+  }
+}
+
+window.customElements.define('sidebar-navigation', SidebarNavigation);
 
 class ImageGrid extends HTMLElement {
   constructor() {
@@ -190,7 +264,8 @@ class ImageGrid extends HTMLElement {
       setTimeout(function () {
         gridItem.setAttribute('data-rating', newRating);
         gridItem.setAttribute('data-rank', newRank);
-        gridItem.style.setProperty('--rank-color', newRankColor);
+        gridItem.style.setProperty('--rank-color', newRankColor.rankColor);
+        gridItem.style.setProperty('--rank-color-dark', newRankColor.rankColorDark);
         imageElem.src = newImage
         imageElem.classList.add('lazyload');
       }, 200);
@@ -569,7 +644,8 @@ class ViewModal extends HTMLElement {
 
         this.gridItem.dataset.rating = rating;
         this.gridItem.dataset.rank = rank;
-        this.gridItem.style.setProperty('--rank-color', rankColor);
+        this.gridItem.style.setProperty('--rank-color', rankColor.rankColor);
+        this.gridItem.style.setProperty('--rank-color-dark', rankColor.rankColorDark);
 
         document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'success', message: 'Rating updated' } }));
       } else {
@@ -695,6 +771,8 @@ class ViewStats extends HTMLElement {
     fetch('/getstats').then(function (response) {
       return response.json();
     }).then(function (data) {
+      document.dispatchEvent(new CustomEvent('sidemenu:close'));
+
       if (window.echartsLoaded === true) {
         this.diagram = this.loadChart(data);
         this.setDiagram(this.diagram);
@@ -901,21 +979,13 @@ class TagSearch extends HTMLElement {
   constructor() {
     super();
 
-    this.opener = this.querySelector('[data-action="open-controls"]');
-    this.controls = this.querySelector('.tag-search__controls');
     this.input = this.querySelector('input');
     this.searchButton = this.querySelector('[data-action="search"]');
 
-    this.opener.addEventListener('click', this.toggleControls.bind(this));
     this.searchButton.addEventListener('click', this.handleSearch.bind(this));
     this.input.addEventListener('keydown', this.handleInputSearch.bind(this));
 
     document.addEventListener('tagsearch:tags:set', this.setTags.bind(this));
-  }
-
-  toggleControls() {
-    this.opener.classList.toggle('open');
-    this.controls.classList.toggle('hidden');
   }
 
   handleSearch() {

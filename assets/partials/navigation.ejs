@@ -1,0 +1,59 @@
+<sticky-navigation>
+  <button type="button" data-action="open-sidemenu">
+    <svg viewBox="0 0 24 24">
+      <use xlink:href="#hamburger"></use>
+    </svg>
+  </button>
+  <h1>
+    Man of Culture WebUI
+  </h1>
+</sticky-navigation>
+
+<sidebar-navigation>
+  <button type="button" data-action="close-sidemenu">
+    <svg viewBox="0 0 24 24">
+      <use xlink:href="#plus"></use>
+    </svg>
+  </button>
+  <div class="sidebar-nav__profile">
+    <div class="sidebar-nav__profile--avatar">
+      <img class="lazyload" src="<%- user.avatar %>" alt="Avatar">
+    </div>
+
+    <div class="sidebar-nav__profile--name">
+      <h2>
+        <%- user.username %>
+      </h2>
+    </div>
+  </div>
+
+  <h2>
+    Filter & Search
+  </h2>
+  <div class="sidebar-nav__search-tags">
+    <tag-search>
+      <div class="tag-search__controls">
+        <input type="text">
+        <svg data-action="search">
+          <use xlink:href="#search"></use>
+        </svg>
+      </div>
+    </tag-search>
+  </div>
+  <div class="sidebar-nav__order-images">
+    <!-- TODO -->
+  </div>
+
+  <hr class="separator">
+
+  <h2>
+    Actions
+  </h2>
+  <div class="sidebar-nav__actions">
+    <div class="open-stats">
+      <button type="button" data-action="open-stats">
+        Stats
+      </button>
+    </div>
+  </div>
+</sidebar-navigation>

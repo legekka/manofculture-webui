@@ -349,21 +349,20 @@ svg {
 .grid-item::after {
   position: absolute;
   content: attr(data-rank);
-  bottom: 0.5rem;
-  right: 0.5rem;
-  width: 3.5rem;
+  bottom: 0;
+  right: 0;
+  width: 4rem;
   padding: 0.5rem 1rem;
-  background-color: var(--background-lightest);
   border-radius: 1rem;
-  font-size: 1.2rem;
+  font-size: 2rem;
+  font-weight: 700;
   line-height: 1em;
   z-index: 1;
   opacity: 0;
   text-align: center;
-  font-weight: 500;
-  box-shadow: 2px 2px 0 0px var(--rank-color);
   visibility: hidden;
   transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+  -webkit-text-stroke: 0.15rem var(--rank-color-dark);
 }
 
 .grid-item.loaded::after {
@@ -373,20 +372,18 @@ svg {
   transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
 
-.rank__triangle {
+.rank__background {
   position: absolute;
   bottom: 0;
   right: 0;
   z-index: 0;
-  width: 6.5rem;
-  height: 6.5rem;
-  background: linear-gradient(
-    -45deg,
-    var(--background-light) 0%,
-    var(--background-light) 50%,
-    transparent 50%,
-    transparent 100%
-  );
+  width: 4rem;
+  height: 3rem;
+  background-color: var(--rank-color);
+  border: 0.2rem solid var(--rank-color-dark);
+  border-top-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  box-shadow: 0 0 2rem rgba(0, 0, 0, 0.5);
 }
 
 @keyframes image-loading {
@@ -411,8 +408,8 @@ svg {
     15% 0%,
     100% 0%,
     100% 0%,
-    100% 80%,
-    80% 100%,
+    100% 92%,
+    92% 100%,
     15% 100%,
     0% 100%,
     0% 0%
@@ -460,6 +457,120 @@ img.lazyloaded::before {
   background-color: var(--accent-3);
 }
 
+/* --- Sticky navigation component --- */
+sticky-navigation {
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  top: 0;
+  width: 100%;
+  padding: 1.5rem 5rem;
+  display: flex;
+  align-items: center;
+  background-color: var(--background-lighter);
+  transform: translate(0, 0);
+  transition: transform 0.2s ease-in-out;
+}
+
+sticky-navigation.closed {
+  transform: translate(0, -100%);
+  transition: transform 0.2s ease-in-out;
+}
+
+sticky-navigation.force-open {
+  transform: translate(0, 0) !important;
+  transition: transform 0.2s ease-in-out;
+}
+
+sticky-navigation button {
+  all: unset;
+  width: 2.5rem;
+  height: 2.5rem;
+  cursor: pointer;
+}
+
+sticky-navigation button svg {
+  width: 100%;
+  height: 100%;
+}
+
+sticky-navigation h1 {
+  margin: 0 auto;
+  padding-right: 2.5rem;
+}
+
+/* -- Sidebar navigation component -- */
+sidebar-navigation {
+  position: fixed;
+  z-index: 11;
+  left: 0;
+  top: 0;
+  width: min(300px, 90%);
+  height: 100%;
+  padding: 2rem;
+  background-color: var(--background-lightest);
+  box-shadow: 3px 0 4px rgba(0, 0, 0, 0.3);
+  transform: translate(calc(-100% - 1rem), 0%);
+  transition: transform 0.2s ease-in-out;
+}
+
+sidebar-navigation.open {
+  transform: translate(0, 0);
+  transition: transform 0.2s ease-in-out;
+}
+
+[data-action="close-sidemenu"] {
+  all: unset;
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  transform: rotate(45deg);
+  transform-origin: center center;
+  background: var(--background-lightest);
+  border-radius: 2em;
+}
+
+[data-action="close-sidemenu"] svg {
+  width: 2em;
+  height: 2em;
+}
+
+sidebar-navigation .separator {
+  all: unset;
+  display: block;
+  height: 6px;
+  margin: 2rem 0;
+  box-shadow: 0 4px 0 -2px var(--accent-4);
+}
+
+.sidebar-nav__profile {
+  display: flex;
+  align-items: center;
+  padding: 4rem 2rem;
+  margin: -2rem -2rem 4rem -2rem;
+  background-color: var(--background-light);
+}
+
+.sidebar-nav__profile--avatar {
+  width: 10rem;
+  height: 10rem;
+  border-radius: 10rem;
+  overflow: hidden;
+}
+
+.sidebar-nav__profile h2 {
+  font-size: 3rem;
+  margin: 0 0 0 2rem;
+}
+
 /* --- Image grid component --- */
 image-grid {
   display: block;
@@ -498,7 +609,7 @@ image-grid {
   cursor: pointer;
 }
 
-.custom-radio:checked + label::after {
+.custom-radio + label::after {
   content: '';
   display: block;
   position: absolute;
@@ -510,12 +621,15 @@ image-grid {
   border-radius: 1em;
   box-shadow: inset 0 0 0.042em 0.25em var(--accent-2);
   cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.custom-radio:checked + label::after {
+  opacity: 1;
 }
 
 .open-stats {
-  position: absolute;
-  left: 0;
-  top: 30px;
   font-size: 1.6rem;
 }
 
@@ -606,16 +720,8 @@ jump-to-page {
   transform: translateY(-50%);
 }
 
-tag-search {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
 @media screen and (max-width: 980px) {
-  jump-to-page,
-  tag-search {
+  jump-to-page {
     top: -100%;
     transform: unset;
     font-size: 1.4rem;
@@ -690,27 +796,18 @@ tag-search svg {
   transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
 
-.jump-to-page__controls.hidden,
-.tag-search__controls.hidden {
+.jump-to-page__controls.hidden {
   pointer-events: none;
 }
 
 .tag-search__controls {
   font-size: 1.4rem;
   opacity: 1;
-  visibility: visible;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: absolute;
-  left: 0;
-  top: 100%;
-  margin-top: 10px;
-  padding: 1.4rem 2rem;
   border-radius: 10px;
-  box-shadow: 3px 3px 8px 3px rgba(0, 0, 0, 0.2);
   background-color: var(--background-lightest);
-  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
 
 .jump-to-page__controls button,
@@ -740,11 +837,11 @@ tag-search svg {
 
 .tag-search__controls input {
   all: unset;
+  width: 100%;
   color: var(--font-color);
   box-shadow: 0 4px 0 -2px var(--accent-4);
   transition: box-shadow 0.2s ease-in-out;
   text-align: left;
-  width: 30ch;
 }
 
 .jump-to-page__controls input:active,
@@ -892,7 +989,7 @@ view-modal.hidden .view-modal__inner {
     flex-direction: column;
     padding: 2rem;
     max-width: 480px;
-    max-height: 800px;
+    max-height: 700px;
     overflow: auto;
   }
 
@@ -1163,7 +1260,7 @@ view-stats.hidden .view-stats__inner {
     flex-direction: column-reverse;
     padding: 2rem;
     max-width: 480px;
-    max-height: 800px;
+    max-height: 700px;
     overflow: auto;
   }
 

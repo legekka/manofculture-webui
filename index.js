@@ -32,13 +32,18 @@ app.get('/', async (req, res) => {
     return res.redirect('/auth');
   }
 
+  const user = {
+    username: req.signedCookies.username,
+    avatar: req.signedCookies.avatar
+  }
+
   ejs.renderFile('./assets/pages/booru.ejs', (err, bodyContent) => {
     if (err) {
       console.log('Error: ', err);
       return res.send('Some error occurred!');
     }
 
-    ejs.renderFile('./assets/index.ejs', { page: bodyContent }, (err, html) => {
+    ejs.renderFile('./assets/index.ejs', { page: bodyContent, user: user }, (err, html) => {
       if (err) {
         console.log('Error: ', err);
         return res.send('Some error occurred!');
@@ -60,7 +65,7 @@ app.get('/auth', (req, res) => {
       return res.send('Some error occurred!');
     }
 
-    ejs.renderFile('./assets/index.ejs', { page: bodyContent }, (err, html) => {
+    ejs.renderFile('./assets/index.ejs', { page: bodyContent, user: null }, (err, html) => {
       if (err) {
         console.log('Error: ', err);
         return res.send('Some error occurred!');
@@ -95,7 +100,8 @@ app.get('/auth/discord', async(req, res) => {
       });
 
       const user = {
-        username: userDataResponse.data.username
+        username: userDataResponse.data.username,
+        avatar: `https://cdn.discordapp.com/avatars/${ userDataResponse.data.id }/${ userDataResponse.data.avatar }.png`
       }
 
       const expirationDuration = 3 * 24 * 60 * 60 * 1000; // 3 day
@@ -106,6 +112,11 @@ app.get('/auth/discord', async(req, res) => {
       });
 
       res.cookie('username', user.username, {
+        signed: true,
+        maxAge: expirationDuration
+      });
+
+      res.cookie('avatar', user.avatar, {
         signed: true,
         maxAge: expirationDuration
       });
