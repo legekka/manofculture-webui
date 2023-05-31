@@ -548,7 +548,7 @@ class ViewModal extends HTMLElement {
   }
 
   handleRatingChange(event) {
-    const rating = event.detail.rating;
+    const rating = Number(event.detail.rating);
     const filename = this.filenameContainer.innerText;
 
     fetch('/updaterating', {
@@ -565,10 +565,11 @@ class ViewModal extends HTMLElement {
     }).then(function (data) {
       if (data.success === true) {
         const rank = ratingToRank(rating);
+        const rankColor = getRankColor(rank);
 
         this.gridItem.dataset.rating = rating;
         this.gridItem.dataset.rank = rank;
-        this.gridItem.style.setAttribute('--rank-color', getRankColor(rank));
+        this.gridItem.style.setProperty('--rank-color', rankColor);
 
         document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'success', message: 'Rating updated' } }));
       } else {
