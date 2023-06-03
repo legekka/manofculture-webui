@@ -663,20 +663,7 @@ sort-options svg:hover {
   background-color: var(--accent-4);
 }
 
-/* --- Image grid component --- */
-image-grid {
-  display: block;
-  position: relative;
-  padding-top: 100px;
-}
-
-.pagination-controls {
-  position: absolute;
-  right: 0;
-  top: 30px;
-  font-size: 1.6rem;
-}
-
+/* --- Custom radio buttons --- */
 .custom-radio {
   opacity: 0;
 }
@@ -696,7 +683,7 @@ image-grid {
   top: 0;
   width: 1em;
   height: 1em;
-  background-color: var(--background-lightest);
+  background-color: var(--background-light);
   border-radius: 1em;
   cursor: pointer;
 }
@@ -719,6 +706,13 @@ image-grid {
 
 .custom-radio:checked + label::after {
   opacity: 1;
+}
+
+/* --- Image grid component --- */
+image-grid {
+  display: block;
+  position: relative;
+  padding-top: 100px;
 }
 
 /* --- Pagination nav component --- */
