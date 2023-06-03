@@ -133,12 +133,14 @@ app.get('/getimages', async (req, res) => {
   const user = req.signedCookies.username;
   const filters = req.query.filters;
   const page = req.query.page;
+  const sort = req.query.sort;
 
   const pageQuery = typeof page !== 'undefined' ? `&page=${ page }` : '';
   const filtersQuery = typeof filters !== 'undefined' ? `&filters=${ filters }` : '';
+  const sortQuery = typeof sort !== 'undefined' ? `&sort=${ sort }` : '';
 
   try {
-    const images = await axios.get(`${ API_URL }/getuserdata?user=${ user }${ filtersQuery }${ pageQuery }`);
+    const images = await axios.get(`${ API_URL }/getuserdata?user=${ user }${ filtersQuery }${ pageQuery }${ sortQuery }`);
     return res.status(200).send(images.data);
   } catch (error) {
     console.log('Error', error);
@@ -148,16 +150,26 @@ app.get('/getimages', async (req, res) => {
 
 app.get('/getimage', async (req, res) => {
   const filename = req.query.filename;
-  const image = await axios.get(`${ API_URL }/getimage?filename=${ filename }`, { responseType: 'arraybuffer' });
 
-  return res.send(image.data);
+  try {
+    const image = await axios.get(`${ API_URL }/getimage?filename=${ filename }`, { responseType: 'arraybuffer' });
+    return res.send(image.data);
+  } catch (error) {
+    console.log('Error', error);
+    return res.status(400).send({ error: 'Some error occurred!' });
+  }
 });
 
 app.get('/gettags', async (req, res) => {
   const filename = req.query.filename;
-  const tags = await axios.get(`${ API_URL }/getimagetags?filename=${ filename }`);
 
-  return res.send(tags.data);
+  try {
+    const tags = await axios.get(`${ API_URL }/getimagetags?filename=${ filename }`);
+    return res.send(tags.data);
+  } catch (error) {
+    console.log('Error', error);
+    return res.status(400).send({ error: 'Some error occurred!' });
+  }
 });
 
 app.post('/updaterating', async (req, res) => {
@@ -178,11 +190,13 @@ app.get('/getimageneighbours', async (req, res) => {
   const user = req.signedCookies.username;
   const filename = req.query.filename;
   const filters = req.query.filters;
+  const sort = req.query.sort;
 
   const filtersQuery = typeof filters !== 'undefined' ? `&filters=${ filters }` : '';
+  const sortQuery = typeof sort !== 'undefined' ? `&sort=${ sort }` : '';
 
   try {
-    const images = await axios.get(`${ API_URL }/getimageneighbours?filename=${ filename }&user=${ user }${ filtersQuery }`);
+    const images = await axios.get(`${ API_URL }/getimageneighbours?filename=${ filename }&user=${ user }${ filtersQuery }${ sortQuery }`);
     return res.status(200).send(images.data);
   } catch (error) {
     console.log('Error', error);

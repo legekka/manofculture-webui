@@ -174,6 +174,7 @@ class ImageGrid extends HTMLElement {
     this.maxImageCount = 60;
     this.currentPage = 1;
     this.currentTags = [];
+    this.currentSort = '';
     
     this.gridItems = this.querySelectorAll('.grid-item');
     this.imagesData = [];
@@ -199,13 +200,16 @@ class ImageGrid extends HTMLElement {
 
     this.currentPage = urlParams.get('page') !== null ? Number(urlParams.get('page')) : 1;
     this.currentTags = urlParams.get('filters') !== null ? urlParams.get('filters').split(',') : [];
+    this.currentSort = urlParams.get('sort') !== null ? urlParams.get('sort') : '';
 
     const filtersQuery = this.currentTags.length > 0 ? `&filters=${ this.currentTags.join(',') }` : '';
+    const sortQuery = this.currentSort !== '' ? `&sort=${ this.currentSort }` : '';
 
-    const images = await fetch(`/getimages?&page=${ this.currentPage }${ filtersQuery }`);
+    const images = await fetch(`/getimages?&page=${ this.currentPage }${ filtersQuery }${ sortQuery }`);
 
     if (images.status !== 200) {
       this.imagesData = [];
+      document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: 'Request timed out' } }));
       return;
     }
 
@@ -279,6 +283,7 @@ class ImageGrid extends HTMLElement {
   handlePageChange(event) {
     this.currentPage = typeof event.detail.newPage !== 'undefined' ? event.detail.newPage : this.currentPage;
     this.currentTags = typeof event.detail.newTags !== 'undefined' ? event.detail.newTags : this.currentTags;
+    this.currentSort = typeof event.detail.newSort !== 'undefined' ? event.detail.newSort : this.currentSort;
 
     this.unloadCurrentImages();
     this.scrollToTop();
@@ -313,10 +318,18 @@ class ImageGrid extends HTMLElement {
 
   updateUrl() {
     const currentUrl = new URL(window.location.href);
-    const urlParams = currentUrl.searchParams;
+    const urlParams = new URLSearchParams();
+    const params = {
+      page: this.currentPage > 1 ? this.currentPage : null,
+      filters: this.currentTags.length > 0 ? this.currentTags.join(',') : null,
+      sort: this.currentSort !== '' ? this.currentSort : null
+    }
 
-    urlParams.set('page', this.currentPage);
-    this.currentTags.length > 0 ? urlParams.set('filters', this.currentTags.join(',')) : urlParams.delete('filters');
+    for (const key in params) {
+      if (params[key] !== null) {
+        urlParams.set(key, params[key]);
+      }
+    }
 
     window.history.pushState({}, '', `${ currentUrl.origin }${ currentUrl.pathname }?${ urlParams.toString() }`);
   }
@@ -537,6 +550,10 @@ class ViewModal extends HTMLElement {
         'Content-Type': 'application/json'
       }
     }).then(function (response) {
+      if (response.status !== 200) {
+        document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Couldn't fetch tags" } }));
+      }
+
       return response.json();
     }).then(function (data) {
       return data.tags;
@@ -580,18 +597,7 @@ class ViewModal extends HTMLElement {
     tempImg.onload = async function () {
       const filename = imageSrc.split('=')[1];
 
-      const neighbourImages = await this.getNeibourImages(filename);
-
-      this.previousButton.classList.add('hidden');
-      this.nextButton.classList.add('hidden');
-
-      if (neighbourImages.prev_image !== null) {
-        this.previousButton.classList.remove('hidden');
-      }
-
-      if (neighbourImages.next_image !== null) {
-        this.nextButton.classList.remove('hidden');
-      }
+      await this.getNeibourImages(filename);
 
       this.filenameContainer.innerText = filename;
 
@@ -656,15 +662,22 @@ class ViewModal extends HTMLElement {
 
   async getNeibourImages(fileName) {
     const currentTags = new URL(window.location.href).searchParams.get('filters') || '';
+    const currentSort = new URL(window.location.href).searchParams.get('sort') || '';
     const tagsQuery = currentTags !== '' ? `&filters=${ currentTags }` : '';
+    const sortQuery = currentSort !== '' ? `&sort=${ currentSort }` : '';
 
     this.nextButton.classList.add('hidden');
     this.previousButton.classList.add('hidden');
 
-    const response = await fetch(`/getimageneighbours?filename=${ fileName }${ tagsQuery }`);
+    const response = await fetch(`/getimageneighbours?filename=${ fileName }${ tagsQuery }${ sortQuery }`);
+
+    if (response.status !== 200) {
+      document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Couldn't fetch neighbour images" } }));
+    }
+
     const result = await response.json();
 
-    if (result.next_image !== null) {
+    if (result.next_image.image !== null) {
       this.nextImage = result.next_image.image;
       this.nextImageRating = result.next_image.rating;
       this.nextButton.classList.remove('hidden');
@@ -672,7 +685,7 @@ class ViewModal extends HTMLElement {
       this.nextImage = null;
     }
 
-    if (result.prev_image !== null) {
+    if (result.prev_image.image !== null) {
       this.previousImage = result.prev_image.image;
       this.previousImageRating = result.prev_image.rating;
       this.previousButton.classList.remove('hidden');
@@ -684,64 +697,42 @@ class ViewModal extends HTMLElement {
   }
 
   changeImage(direction) {
-    const currentTags = new URL(window.location.href).searchParams.get('filters') || '';
     const currentPage = new URL(window.location.href).searchParams.get('page') || 1;
-    const currentFileName = this.filenameContainer.innerText;
+    const currentFileName = direction === 'next' ? this.nextImage : this.previousImage;
+    const currentRating = direction === 'next' ? this.nextImageRating : this.previousImageRating;
+
+    if (currentFileName === null) {
+      return;
+    }
 
     this.image.classList.add('hidden');
     this.infoContainer.classList.add('hidden');
     this.nextButton.disabled = true;
     this.previousButton.disabled = true;
 
-    if (direction === 'next') {
-      this.getNeibourImages(currentFileName).then(function (result) {
-        this.nextButton.disabled = false;
-        this.previousButton.disabled = false;
+    this.getNeibourImages(currentFileName).then(function (result) {
+      this.nextButton.disabled = false;
+      this.previousButton.disabled = false;
 
-        const supposedPage = Math.ceil((result.position + 1) / 60);
+      const supposedPage = direction === 'next' ? Math.ceil((result.position + 1) / 60) : Math.ceil((result.position -1) / 60);
 
-        setTimeout(function () {
-          this.setTags(this.nextImage).then(function () {
-            this.setRatingControls(convertRating(this.nextImageRating));
+      setTimeout(function () {
+        this.setTags(currentFileName).then(function () {
+          this.setRatingControls(convertRating(currentRating));
 
-            this.filenameContainer.innerText = this.nextImage;
-            this.infoContainer.classList.remove('hidden');
+          this.filenameContainer.innerText = currentFileName;
+          this.infoContainer.classList.remove('hidden');
 
-            this.image.src = `/getimage?filename=${ this.nextImage }`;
-            this.image.classList.add('lazyload');
-            this.image.classList.remove('hidden');
-          }.bind(this));
-        }.bind(this), 200);
+          this.image.src = `/getimage?filename=${ currentFileName }`;
+          this.image.classList.add('lazyload');
+          this.image.classList.remove('hidden');
+        }.bind(this));
+      }.bind(this), 200);
 
-        if (supposedPage !== Number(currentPage)) {
-          document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: supposedPage } }));
-        }
-      }.bind(this));
-    } else {
-      this.getNeibourImages(currentFileName).then(function (result) {
-        this.nextButton.disabled = false;
-        this.previousButton.disabled = false;
-
-        const supposedPage = Math.ceil((result.position - 1) / 60);
-
-        setTimeout(function () {
-          this.setTags(this.previousImage).then(function () {
-            this.setRatingControls(convertRating(this.previousImageRating));
-
-            this.filenameContainer.innerText = this.previousImage;
-            this.infoContainer.classList.remove('hidden');
-
-            this.image.src = `/getimage?filename=${ this.previousImage }`;
-            this.image.classList.add('lazyload');
-            this.image.classList.remove('hidden');
-          }.bind(this));
-        }.bind(this), 200);
-
-        if (supposedPage !== Number(currentPage)) {
-          document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: supposedPage } }));
-        }
-      }.bind(this));
-    }
+      if (supposedPage !== Number(currentPage) && supposedPage >= 1) {
+        document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: supposedPage } }));
+      }
+    }.bind(this));
   }
 }
 
@@ -769,6 +760,10 @@ class ViewStats extends HTMLElement {
 
   openStats() {
     fetch('/getstats').then(function (response) {
+      if (response.status !== 200) {
+        document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Couldn't fetch stats" } }));
+      }
+
       return response.json();
     }).then(function (data) {
       document.dispatchEvent(new CustomEvent('sidemenu:close'));
@@ -1014,3 +1009,46 @@ class TagSearch extends HTMLElement {
 }
 
 window.customElements.define('tag-search', TagSearch);
+
+class SortOptions extends HTMLElement {
+  constructor() {
+    super();
+
+    this.opener = this.querySelector('[data-action="toggle-sort-options"]');
+    this.currentSort = new URL(window.location.href).searchParams.get('sort') || 'date-desc';
+    this.currentSortContainer = this.querySelector('[data-current]');
+    this.sortOptions = this.querySelectorAll('input[type="radio"]');
+
+    this.setCurrentSort();
+
+    this.opener.addEventListener('click', this.toggleOptions.bind(this));
+
+    for (const sortOption of this.sortOptions) {
+      sortOption.addEventListener('change', this.handleSortChange.bind(this));
+    }
+  }
+
+  toggleOptions() {
+    this.classList.toggle('open');
+  }
+
+  setCurrentSort() {
+    const currentSort = this.querySelector(`input[value="${ this.currentSort }"]`);
+
+    currentSort.checked = true;
+    this.currentSortContainer.innerText = currentSort.dataset.label;
+  }
+
+  handleSortChange(event) {
+    const newSort = event.target.value;
+
+    this.currentSort = newSort;
+
+    this.setCurrentSort();
+
+    document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: 1 } }));
+    document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: 1, newSort: newSort } }));
+  }
+}
+
+window.customElements.define('sort-options', SortOptions);

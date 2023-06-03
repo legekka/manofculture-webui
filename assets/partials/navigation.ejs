@@ -27,33 +27,60 @@
     </div>
   </div>
 
-  <h2>
-    Filter & Search
-  </h2>
   <div class="sidebar-nav__search-tags">
     <tag-search>
       <div class="tag-search__controls">
-        <input type="text">
+        <input type="text" placeholder="Search...">
         <svg data-action="search">
           <use xlink:href="#search"></use>
         </svg>
       </div>
     </tag-search>
   </div>
-  <div class="sidebar-nav__order-images">
-    <!-- TODO -->
+  <div class="sidebar-nav__sort">
+    <sort-options>
+      <div class="sort-options__inner">
+        <button class="sort-options__current-option" data-action="toggle-sort-options">
+          <span data-current>
+            <!-- This is rendered by JavaScript -->
+          </span>
+          <svg>
+            <use xlink:href="#sort"></use>
+          </svg>
+        </button>
+        <div class="sort-options__options">
+          <input type="radio" name="sort-option" value="date-asc" data-label="Date (Ascending)" id="date-asc">
+          <label for="date-asc">Date (Ascending)</label>
+          <input type="radio" name="sort-option" value="date-desc" data-label="Date (Descending)" id="date-desc">
+          <label for="date-desc">Date (Descending)</label>
+          <input type="radio" name="sort-option" value="rating-asc" data-label="Rating (Ascending)" id="rating-asc">
+          <label for="rating-asc">Rating (Ascending)</label>
+          <input type="radio" name="sort-option" value="rating-desc" data-label="Rating (Descending)" id="rating-desc">
+          <label for="rating-desc">Rating (Descending)</label>
+          <input type="radio" name="sort-option" value="filename-asc" data-label="Filename (Ascending)" id="filename-asc">
+          <label for="filename-asc">Filename (Ascending)</label>
+          <input type="radio" name="sort-option" value="filename-desc" data-label="Filename (Descending)" id="filename-desc">
+          <label for="filename-desc">Filename (Descending)</label>
+        </div>
+      </div>
+    </sort-options>
   </div>
-
-  <hr class="separator">
 
   <h2>
     Actions
   </h2>
   <div class="sidebar-nav__actions">
-    <div class="open-stats">
-      <button type="button" data-action="open-stats">
-        Stats
-      </button>
-    </div>
+    <button type="button" data-action="open-upload-modal">
+      <svg>
+        <use xlink:href="#upload"></use>
+      </svg>
+      <span>Upload culture</span>
+    </button>
+    <button type="button" data-action="open-stats">
+      <svg>
+        <use xlink:href="#statistics"></use>
+      </svg>
+      <span>Statistics</span>
+    </button>
   </div>
 </sidebar-navigation>

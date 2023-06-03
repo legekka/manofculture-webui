@@ -3,45 +3,66 @@
   <% if (user !== null) { %>
     <!-- Common svg definitions -->
     <!-- Plus sign -->
-    <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: none">
+    <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: none;">
       <symbol id="plus" viewBox="0 0 24 24">
-        <path d="M5,12H19M12,5V19" style="fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></path>
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5,12H19M12,5V19"/>
       </symbol>
     </svg>
     <!-- Minus sign -->
-    <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: none">
+    <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: none;">
       <symbol id="minus" viewBox="0 0 24 24">
-        <line x1="19" y1="12" x2="5" y2="12" style="fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></line>
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"/>
       </symbol>
     </svg>
     <!-- Image icon -->
-    <svg fill="currentColor" viewBox="-0.5 0.5 42 42" xmlns="http://www.w3.org/2000/svg" style="display: none">
+    <svg fill="currentColor" viewBox="-0.5 0.5 42 42" xmlns="http://www.w3.org/2000/svg" style="display: none;">
       <symbol id="picture" viewBox="-0.5 0.5 42 42">
         <path d="M35.79 31.5c-.05-.04-5.181-7.971-6.72-7.971-1.51 0-4.391 3.851-4.391 3.851-2.24-2.31-7.2-8.87-8.661-8.87-1.509 0-7.449 8.12-10.789 12.99H35.79zm-8.979-17c0 2.04 1.649 3.69 3.689 3.69s3.689-1.65 3.689-3.69-1.649-3.69-3.689-3.69-3.689 1.65-3.689 3.69zM.5 7.5v27c0 2.52.51 3 3 3h34c2.471 0 3-.46 3-3v-27c0-2.46-.471-3-3-3h-34c-2.48 0-3 .43-3 3zm3 0h34v27h-34v-27z"/>
       </symbol>
     </svg>
     <!-- Seach icon -->
-    <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: none">
+    <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: none;">
       <symbol id="search" viewBox="0 0 24 24">
-        <path d="m15 15 6 6m-11-4a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m15 15 6 6m-11-4a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"/>
       </symbol>
     </svg>
     <!-- Right arrow -->
     <svg fill="none" viewBox="0 0 11 18" xmlns="http://www.w3.org/2000/svg" style="display: none;">
       <symbol id="arrow-right" viewBox="0 0 11 18">
-        <path d="M1.5 1.5l8 7.5-8 7.5" stroke-width="2" stroke="currentColor" fill="none" fill-rule="evenodd" stroke-linecap="round"/>
+        <path stroke-width="2" stroke="currentColor" fill="none" fill-rule="evenodd" stroke-linecap="round" d="M1.5 1.5l8 7.5-8 7.5"/>
       </symbol>
     </svg>
     <!-- Left arrow -->
     <svg fill="none" viewBox="0 0 11 18" xmlns="http://www.w3.org/2000/svg" style="display: none;">
       <symbol id="arrow-left" viewBox="0 0 11 18">
-        <path d="M9.5 1.5L1.5 9l8 7.5" stroke-width="2" stroke="currentColor" fill="none" fill-rule="evenodd" stroke-linecap="round"/>
+        <path stroke-width="2" stroke="currentColor" fill="none" fill-rule="evenodd" stroke-linecap="round" d="M9.5 1.5L1.5 9l8 7.5"/>
       </symbol>
     </svg>
     <!-- Hamburger icon -->
     <svg fill="none" viewBox="4 6 16 12" xmlns="http://www.w3.org/2000/svg" style="display: none;">
       <symbol id="hamburger" viewBox="4 6 16 12">
-        <path d="M5 17h14M5 12h14M5 7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 17h14M5 12h14M5 7h14"/>
+      </symbol>
+    </svg>
+    <!-- Upload icon -->
+    <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <symbol id="upload" viewBox="0 0 24 24">
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12.3v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m7.9 6.7 4.1-4 4.1 4"/>
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16.3V4.8"/>
+      </symbol>
+    </svg>
+    <!-- Statistics icon -->
+    <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <symbol id="statistics" viewBox="0 0 24 24">
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2a10 10 0 1 0 10 10H12Z"/>
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 9h6.54A10.022 10.022 0 0 0 15 2.46Z"/>
+      </symbol>
+    </svg>
+    <!-- Sort icon -->
+    <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <symbol id="sort" viewBox="0 0 24 24">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M2 7a1 1 0 0 1 1-1h18a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1zm1 4a1 1 0 1 0 0 2h10a1 1 0 1 0 0-2H3z" fill="currentColor"/>
       </symbol>
     </svg>
 
