@@ -80,6 +80,26 @@
   font-display: fallback;
 }
 
+@font-face {
+  font-family: 'Rubik';
+  src: url('Rubik-Black.woff2') format('woff2'),
+       url('Rubik-Black.woff') format('woff'),
+       url('Rubik-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: 'Rubik';
+  src: url('Rubik-BlackItalic.woff2') format('woff2'),
+       url('Rubik-BlackItalic.woff') format('woff'),
+       url('Rubik-BlackItalic.ttf') format('truetype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: fallback;
+}
+
 /* Resets from: https://github.com/hankchizljaw/modern-css-reset */
 /* --- Reset --- */
 *,
@@ -356,7 +376,7 @@ svg {
   padding: 0.5rem 0;
   border-radius: 1rem;
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 900;
   line-height: 1em;
   z-index: 1;
   opacity: 0;
