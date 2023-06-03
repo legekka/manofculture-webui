@@ -733,6 +733,7 @@ sort-options svg:hover {
   display: flex;
   flex-wrap: wrap;
   margin-top: 1rem;
+  box-shadow: 0 -1px 0 0 rgba(255, 255, 255, 0.3);
 }
 
 .sort-options__options input {
