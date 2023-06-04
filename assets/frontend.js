@@ -36,6 +36,10 @@ function debounce (fn, delay = 500) {
 }
 
 function convertRating(imageRating) {
+  if (imageRating === null) {
+    return null;
+  }
+
   const ratingRatio = 1 / 6;
 
   const conversion = Number(
@@ -513,6 +517,7 @@ class ViewModal extends HTMLElement {
     this.closeButton = this.querySelector('[data-action="close-modal"]');
     this.nextButton = this.querySelector('[data-action="next-image"]');
     this.previousButton = this.querySelector('[data-action="previous-image"]');
+    this.removeRatingButton = this.querySelector('[data-action="remove-rating"]');
     this.nextImage = null;
     this.previousImage = null;
     this.nextImageRating = null;
@@ -524,6 +529,7 @@ class ViewModal extends HTMLElement {
     this.closeButton.addEventListener('click', this.closeModal.bind(this));
     this.nextButton.addEventListener('click', this.changeImage.bind(this, 'next'));
     this.previousButton.addEventListener('click', this.changeImage.bind(this, 'previous'));
+    this.removeRatingButton.addEventListener('click', this.removeRating.bind(this));
 
     document.addEventListener('modal:open', this.openModal.bind(this));
 
@@ -535,6 +541,16 @@ class ViewModal extends HTMLElement {
   }
 
   setRatingControls(convertedRating) {
+    if (convertedRating === null ) {
+      for (const control of this.ratingControls) {
+        control.checked = false;
+      }
+
+      this.removeRatingButton.classList.add('hidden');
+
+      return;
+    }
+
     for (const control of this.ratingControls) {
       if (control.value === convertedRating.toString()) {
         control.checked = true;
@@ -542,6 +558,8 @@ class ViewModal extends HTMLElement {
         control.checked = false;
       }
     }
+
+    this.removeRatingButton.classList.remove('hidden');
   }
 
   async setTags(filename) {
@@ -589,11 +607,8 @@ class ViewModal extends HTMLElement {
   openModal(event) {
     this.gridItem = event.detail.gridItem;
 
+    const isUnrated = this.gridItem.classList.contains('rating-removed');
     const imageSrc = event.detail.imageSrc;
-    const imageRating = Number(event.detail.imageRating) || 0;
-    const convertedRating = convertRating(imageRating);
-
-    this.setRatingControls(convertedRating);
 
     this.image.src = imageSrc;
 
@@ -602,12 +617,15 @@ class ViewModal extends HTMLElement {
 
     tempImg.onload = async function () {
       const filename = imageSrc.split('=')[1];
+      const promises = isUnrated === true ? [this.setTags(filename)] : [this.getNeibourImages(filename), this.setTags(filename)];
 
-      await this.getNeibourImages(filename);
+      await Promise.all(promises);
+
+      const imageRating = typeof event.detail.imageRating !== 'undefined' ? Number(event.detail.imageRating) : null;
+      const convertedRating = convertRating(imageRating);
+      this.setRatingControls(convertedRating);
 
       this.filenameContainer.innerText = filename;
-
-      this.setTags(filename);
 
       this.pageWrapper.classList.add('blurred');
       document.documentElement.classList.add('overflow-hidden');
@@ -658,12 +676,43 @@ class ViewModal extends HTMLElement {
         this.gridItem.dataset.rank = rank;
         this.gridItem.style.setProperty('--rank-color', rankColor.rankColor);
         this.gridItem.style.setProperty('--rank-color-dark', rankColor.rankColorDark);
+        this.gridItem.classList.remove('rating-removed');
+        this.removeRatingButton.classList.remove('hidden');
 
         document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'success', message: 'Rating updated' } }));
       } else {
         document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: 'Rating update failed' } }));
       }
     }.bind(this));
+  }
+
+  async removeRating() {
+    const selectedRating = this.querySelector('input[name="rating"]:checked');
+    const filename = this.filenameContainer.innerText;
+
+    if (selectedRating === null) {
+      document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Cannot remove rating from unrated entry" } }));
+      return;
+    }
+
+    const response = await fetch('/removerating?filename=' + filename, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.status !== 200) {
+      document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Remove rating failed" } }));
+      return;
+    }
+
+    selectedRating.checked = false;
+    this.removeRatingButton.classList.add('hidden');
+    this.gridItem.classList.add('rating-removed');
+    this.gridItem.removeAttribute('data-rating');
+
+    document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'success', message: 'Rating removed' } }));
   }
 
   async getNeibourImages(fileName) {
@@ -934,21 +983,37 @@ class ToastMessage extends HTMLElement {
     if (this.type !== event.detail.type) {
       return;
     }
-
-    const existingSameTypeMessage = document.querySelector(`toast-message[type="${ this.type }"].open`);
-
-    if (existingSameTypeMessage !== null) {
-      existingSameTypeMessage.classList.remove('open');
-    }
-
+  
     const message = event.detail.message;
-
-    this.messageContainer.innerText = message;
-    this.classList.add('open');
-
-    setTimeout(function () {
-      this.classList.remove('open');
-    }.bind(this), 3000);
+    const self = this;
+  
+    function sendMessage(message) {
+      this.messageContainer.innerText = message;
+      this.classList.add('open');
+  
+      if (this.timeoutId) {
+        clearTimeout(this.timeoutId);
+      }
+  
+      this.timeoutId = setTimeout(function () {
+        this.classList.remove('open');
+        this.timeoutId = null;
+      }.bind(this), 5000);
+    }
+  
+    const existingMessage = document.querySelector(`toast-message.open`);
+  
+    if (existingMessage !== null) {
+      existingMessage.classList.remove('open');
+  
+      setTimeout(function () {
+        sendMessage.call(self, message);
+      }, 200);
+  
+      return;
+    }
+  
+    sendMessage.call(self, message);
   }
 }
 

@@ -222,6 +222,19 @@ app.get('/getstats', async (req, res) => {
   }
 });
 
+app.get('/removerating', async(req, res) => {
+  const filename = req.query.filename;
+  const user = req.signedCookies.userId;
+
+  try {
+    await axios.get(`${ API_URL }/removerating?user=${ user }&filename=${ filename }`);
+    return res.status(200).send({ success: true });
+  } catch {
+    console.log('Error', error);
+    return res.status(400).send({ error: 'Some error occurred!' });
+  }
+});
+
 /* --- Start app --- */
 app.listen(APP_PORT, () => {
   console.log(`App listening at ${ fullAppUrl }`);
