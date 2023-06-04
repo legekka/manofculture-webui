@@ -22,6 +22,7 @@ const fullAppUrl = `${ APP_URL }${ typeof APP_PORT !== 'undefined' ? `:${ APP_PO
 /* --- Express packages --- */
 app.use(cookieParser(COOKIE_SECRET));
 app.use(express.static('./assets'));
+app.use(express.static('./assets/libs'));
 app.use(express.static('./assets/fonts'));
 app.use(express.static('./assets/images'));
 app.use(express.static('./assets/favicon'));
