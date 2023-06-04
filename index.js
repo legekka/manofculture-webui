@@ -1,12 +1,6 @@
 /* --- .env --- */
 require('dotenv').config();
 
-/* --- Reqs --- */
-const express = require('express');
-const axios = require('axios');
-const cookieParser = require('cookie-parser');
-const ejs = require('ejs');
-
 /* --- .env variables --- */
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
@@ -14,6 +8,12 @@ const COOKIE_SECRET = process.env.COOKIE_SECRET;
 const API_URL = process.env.API_URL;
 const APP_URL = process.env.APP_URL;
 const APP_PORT = process.env.APP_PORT;
+
+/* --- Reqs --- */
+const express = require('express');
+const axios = require('axios');
+const cookieParser = require('cookie-parser');
+const ejs = require('ejs');
 
 /* --- Global consts --- */
 const app = express();
@@ -24,6 +24,7 @@ app.use(cookieParser(COOKIE_SECRET));
 app.use(express.static('./assets'));
 app.use(express.static('./assets/fonts'));
 app.use(express.static('./assets/images'));
+app.use(express.static('./assets/favicon'));
 app.use(express.json());
 
 /* --- Main page (After Auth) --- */
