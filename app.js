@@ -140,13 +140,19 @@ app.get('/getimages', async (req, res) => {
   const filters = req.query.filters;
   const page = req.query.page;
   const sort = req.query.sort;
+  const rated = req.query.rated;
+
+  if (!user) {
+    app.redirect('/auth');
+  }
 
   const pageQuery = typeof page !== 'undefined' ? `&page=${ page }` : '';
   const filtersQuery = typeof filters !== 'undefined' ? `&filters=${ filters }` : '';
   const sortQuery = typeof sort !== 'undefined' ? `&sort=${ sort }` : '';
+  const ratedQuery = typeof rated !== 'undefined' ? `&rated=${ rated }` : '';
 
   try {
-    const images = await axios.get(`${ API_URL }/getuserdata?user=${ user }${ filtersQuery }${ pageQuery }${ sortQuery }`);
+    const images = await axios.get(`${ API_URL }/getuserdata?user=${ user }${ filtersQuery }${ pageQuery }${ sortQuery }${ ratedQuery }`);
     return res.status(200).send(images.data);
   } catch (error) {
     console.log('Error', error);
@@ -183,6 +189,10 @@ app.post('/updaterating', async (req, res) => {
   const rating = req.body.rating;
   const user = req.signedCookies.userId;
 
+  if (!user) {
+    app.redirect('/auth');
+  }
+
   try {
     await axios.post(`${ API_URL }/updaterating`, { filename: filename, rating: rating, user: user });
     return res.status(200).send({ success: true });
@@ -197,12 +207,18 @@ app.get('/getimageneighbours', async (req, res) => {
   const filename = req.query.filename;
   const filters = req.query.filters;
   const sort = req.query.sort;
+  const rated = req.query.rated;
+
+  if (!user) {
+    app.redirect('/auth');
+  }
 
   const filtersQuery = typeof filters !== 'undefined' ? `&filters=${ filters }` : '';
   const sortQuery = typeof sort !== 'undefined' ? `&sort=${ sort }` : '';
+  const ratedQuery = typeof rated !== 'undefined' ? `&rated=${ rated }` : '';
 
   try {
-    const images = await axios.get(`${ API_URL }/getimageneighbours?filename=${ filename }&user=${ user }${ filtersQuery }${ sortQuery }`);
+    const images = await axios.get(`${ API_URL }/getimageneighbours?filename=${ filename }&user=${ user }${ filtersQuery }${ sortQuery }${ ratedQuery }`);
     return res.status(200).send(images.data);
   } catch (error) {
     console.log('Error', error);
@@ -212,6 +228,10 @@ app.get('/getimageneighbours', async (req, res) => {
 
 app.get('/getstats', async (req, res) => {
   const user = req.signedCookies.userId;
+
+  if (!user) {
+    app.redirect('/auth');
+  }
   
   try {
     const stats = await axios.get(`${ API_URL }/getstats?user=${ user }`);
@@ -225,6 +245,10 @@ app.get('/getstats', async (req, res) => {
 app.get('/removerating', async(req, res) => {
   const filename = req.query.filename;
   const user = req.signedCookies.userId;
+
+  if (!user) {
+    app.redirect('/auth');
+  }
 
   try {
     await axios.get(`${ API_URL }/removerating?user=${ user }&filename=${ filename }`);

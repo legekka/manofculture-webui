@@ -36,7 +36,7 @@ function debounce (fn, delay = 500) {
 }
 
 function convertRating(imageRating) {
-  if (imageRating === null) {
+  if (imageRating === null || imageRating === -1.0) {
     return null;
   }
 
@@ -67,6 +67,8 @@ function ratingToRank(rating) {
       return 'S';
     case 1:
       return 'SS';
+    default:
+      return null;
   }
 }
 
@@ -107,6 +109,8 @@ function getRankColor(rank) {
         rankColor: window.rankColors[0],
         rankColorDark: window.rankColorsDark[0]
       };
+    default:
+      return null;
   }
 }
 
@@ -180,6 +184,7 @@ class ImageGrid extends HTMLElement {
     this.currentPage = 1;
     this.currentTags = [];
     this.currentSort = '';
+    this.currentRated = '';
     
     this.gridItems = this.querySelectorAll('.grid-item');
     this.imagesData = [];
@@ -206,11 +211,13 @@ class ImageGrid extends HTMLElement {
     this.currentPage = urlParams.get('page') !== null ? Number(urlParams.get('page')) : 1;
     this.currentTags = urlParams.get('filters') !== null ? urlParams.get('filters').split(',') : [];
     this.currentSort = urlParams.get('sort') !== null ? urlParams.get('sort') : '';
+    this.currentRated = urlParams.get('rated') !== null ? urlParams.get('rated') : '';
 
     const filtersQuery = this.currentTags.length > 0 ? `&filters=${ this.currentTags.join(',') }` : '';
     const sortQuery = this.currentSort !== '' ? `&sort=${ this.currentSort }` : '';
+    const ratedQuery = this.currentRated !== '' ? `&rated=${ this.currentRated }`: '';
 
-    const images = await fetch(`/getimages?&page=${ this.currentPage }${ filtersQuery }${ sortQuery }`);
+    const images = await fetch(`/getimages?&page=${ this.currentPage }${ filtersQuery }${ sortQuery }${ ratedQuery }`);
 
     if (images.status !== 200) {
       this.imagesData = [];
@@ -271,17 +278,37 @@ class ImageGrid extends HTMLElement {
       imageElem.classList.add('transitioning');
 
       setTimeout(function () {
-        gridItem.setAttribute('data-rating', newRating);
-        gridItem.setAttribute('data-rank', newRank);
-        gridItem.style.setProperty('--rank-color', newRankColor.rankColor);
-        gridItem.style.setProperty('--rank-color-dark', newRankColor.rankColorDark);
+        if (newRating !== null) {
+          gridItem.setAttribute('data-rating', newRating);
+        } else {
+          gridItem.removeAttribute('data-rating');
+        }
+
+        if (newRank !== null) {
+          gridItem.setAttribute('data-rank', newRank);
+        } else {
+          gridItem.removeAttribute('data-rank');
+        }
+
+        if (newRank === null || newRating === null) {
+          gridItem.classList.add('not-rated');
+        } else {
+          gridItem.classList.remove('not-rated');
+        }
+
+        gridItem.style.setProperty('--rank-color', newRankColor !== null ? newRankColor.rankColor : 'transparent');
+        gridItem.style.setProperty('--rank-color-dark', newRankColor !== null ? newRankColor.rankColorDark : 'transparent');
+
         imageElem.src = newImage
         imageElem.classList.add('lazyload');
-      }, 200);
 
-      setTimeout(function () {
-        imageElem.classList.remove('transitioning');
-      }, 400);
+        const tempImage = new Image();
+        tempImage.src = newImage;
+
+        tempImage.onload = function() {
+          imageElem.classList.remove('transitioning');
+        }
+      }, 200);
     }
   }
 
@@ -289,6 +316,7 @@ class ImageGrid extends HTMLElement {
     this.currentPage = typeof event.detail.newPage !== 'undefined' ? event.detail.newPage : this.currentPage;
     this.currentTags = typeof event.detail.newTags !== 'undefined' ? event.detail.newTags : this.currentTags;
     this.currentSort = typeof event.detail.newSort !== 'undefined' ? event.detail.newSort : this.currentSort;
+    this.currentRated = typeof event.detail.newRated !== 'undefined' ? event.detail.newRated : this.currentRated;
 
     this.unloadCurrentImages();
     this.scrollToTop();
@@ -327,7 +355,8 @@ class ImageGrid extends HTMLElement {
     const params = {
       page: this.currentPage > 1 ? this.currentPage : null,
       filters: this.currentTags.length > 0 ? this.currentTags.join(',') : null,
-      sort: this.currentSort !== '' ? this.currentSort : null
+      sort: this.currentSort !== '' ? this.currentSort : null,
+      rated: this.currentRated !== '' ? this.currentRated : null
     }
 
     for (const key in params) {
@@ -677,6 +706,7 @@ class ViewModal extends HTMLElement {
         this.gridItem.style.setProperty('--rank-color', rankColor.rankColor);
         this.gridItem.style.setProperty('--rank-color-dark', rankColor.rankColorDark);
         this.gridItem.classList.remove('rating-removed');
+        this.gridItem.classList.remove('not-rated');
         this.removeRatingButton.classList.remove('hidden');
 
         document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'success', message: 'Rating updated' } }));
@@ -718,13 +748,15 @@ class ViewModal extends HTMLElement {
   async getNeibourImages(fileName) {
     const currentTags = new URL(window.location.href).searchParams.get('filters') || '';
     const currentSort = new URL(window.location.href).searchParams.get('sort') || '';
+    const currentRated = new URL(window.location.href).searchParams.get('rated') || '';
     const tagsQuery = currentTags !== '' ? `&filters=${ currentTags }` : '';
     const sortQuery = currentSort !== '' ? `&sort=${ currentSort }` : '';
+    const ratedQuery = currentRated !== '' ? `&rated=${ currentRated }` : '';
 
     this.nextButton.classList.add('hidden');
     this.previousButton.classList.add('hidden');
 
-    const response = await fetch(`/getimageneighbours?filename=${ fileName }${ tagsQuery }${ sortQuery }`);
+    const response = await fetch(`/getimageneighbours?filename=${ fileName }${ tagsQuery }${ sortQuery }${ ratedQuery }`);
 
     if (response.status !== 200) {
       document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Couldn't fetch neighbour images" } }));
@@ -1129,3 +1161,46 @@ class SortOptions extends HTMLElement {
 }
 
 window.customElements.define('sort-options', SortOptions);
+
+class ViewOptions extends HTMLElement {
+  constructor() {
+    super();
+
+    this.opener = this.querySelector('[data-action="toggle-view-options"]');
+    this.currentRated = new URL(window.location.href).searchParams.get('rated') || 'yes';
+    this.currentViewContainer = this.querySelector('[data-current]');
+    this.viewOptions = this.querySelectorAll('input[type="radio"]');
+
+    this.setCurrentView();
+
+    this.opener.addEventListener('click', this.toggleOptions.bind(this));
+
+    for (const viewOption of this.viewOptions) {
+      viewOption.addEventListener('change', this.handleViewChange.bind(this));
+    }
+  }
+
+  toggleOptions() {
+    this.classList.toggle('open');
+  }
+
+  setCurrentView() {
+    const currentRated = this.querySelector(`input[value="${ this.currentRated }"]`);
+
+    currentRated.checked = true;
+    this.currentViewContainer.innerText = currentRated.dataset.label;
+  }
+
+  handleViewChange(event) {
+    const newRated = event.target.value;
+
+    this.currentRated = newRated;
+
+    this.setCurrentView();
+
+    document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: 1 } }));
+    document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: 1, newRated: newRated } }));
+  }
+}
+
+window.customElements.define('view-options', ViewOptions);

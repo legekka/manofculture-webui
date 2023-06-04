@@ -428,17 +428,22 @@ svg {
 
 .grid-item.rating-removed {
   opacity: 0.3;
+  transition: all 0.2s ease-in-out;
 }
 
 .grid-item.rating-removed::after,
-.grid-item.rating-removed .rank__background {
+.grid-item.rating-removed .rank__background,
+.grid-item.not-rated::after,
+.grid-item.not-rated .rank__background {
+  visibility: hidden;
   opacity: 0;
-  transition: unset !important;
+  transition: all 0.2s ease-in-out;
 }
 
-.grid-item.rating-removed > img {
+.grid-item.rating-removed > img,
+.grid-item.not-rated > img {
   clip-path: unset;
-  transition: unset;
+  transition: all 0.2s ease-in-out;
 }
 
 @keyframes image-loading {
@@ -469,16 +474,17 @@ svg {
     0% 100%,
     0% 0%
   ); /* lmao */
+  transition: all 0.2s ease-in-out;
 }
 
 img.lazyload {
   opacity: 0;
-  transition: opacity 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 img.lazyloaded {
   opacity: 1;
-  transition: opacity 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 img.lazyloaded::before {
@@ -717,8 +723,9 @@ sidebar-navigation h2 {
   margin-right: 1em;
 }
 
-/* --- Sort options component --- */
-sort-options {
+/* --- Sort & View options component --- */
+sort-options,
+view-options {
   display: grid;
   grid-template-rows: 0fr;
   padding: 4rem 0 1rem 0;
@@ -728,12 +735,14 @@ sort-options {
   transition: grid-template-rows 0.2s ease-in-out;
 }
 
-sort-options.open {
+sort-options.open,
+view-options.open {
   grid-template-rows: 1fr;
   transition: grid-template-rows 0.2s ease-in-out;
 }
 
-sort-options svg {
+sort-options svg,
+view-options svg {
   margin-left: 1rem;
   cursor: pointer;
   opacity: 0.7;
@@ -741,17 +750,21 @@ sort-options svg {
 }
 
 sort-options:focus-within svg,
-sort-options svg:hover {
+sort-options svg:hover,
+view-options:focus-within svg,
+view-options svg:hover {
   opacity: 1;
 }
 
-.sort-options__inner {
+.sort-options__inner,
+.view-options__inner {
   margin-top: -3rem;
   overflow: hidden;
   font-size: 1.4rem;
 }
 
-.sort-options__current-option {
+.sort-options__current-option,
+.view-options__current-option {
   display: flex;
   width: 100%;
   justify-content: space-between;
@@ -763,18 +776,21 @@ sort-options svg:hover {
   border: none;
 }
 
-.sort-options__options {
+.sort-options__options,
+.view-options__options {
   display: flex;
   flex-wrap: wrap;
   margin-top: 1rem;
   box-shadow: 0 -1px 0 0 rgba(255, 255, 255, 0.3);
 }
 
-.sort-options__options input {
+.sort-options__options input,
+.view-options__options input {
   display: none;
 }
 
-.sort-options__options label {
+.sort-options__options label,
+.view-options__options label {
   flex-basis: 100%;
   flex-grow: 1;
   flex-shrink: 0;
@@ -783,11 +799,13 @@ sort-options svg:hover {
   transition: background-color 0.2s ease-in-out;
 }
 
-.sort-options__options label:hover {
+.sort-options__options label:hover,
+.view-options__options label:hover {
   background-color: var(--accent-3);
 }
 
-.sort-options__options input:checked + label {
+.sort-options__options input:checked + label,
+.view-options__options input:checked + label {
   background-color: var(--accent-4);
 }
 
@@ -905,18 +923,21 @@ pagination-nav a.active {
 
 img {
   opacity: 1;
+  visibility: visible;
   transition: all 0.2s ease-in-out;
 }
 
 .hidden,
 img.transitioning  {
   opacity: 0 !important;
+  visibility: hidden !important;
   transition: all 0.2s ease-in-out;
 }
 
 img[src=""] {
   visibility: hidden !important;
   opacity: 0 !important;
+  transition: all 0.2s ease-in-out !important;
 }
 
 /* --- Jump to page component --- */

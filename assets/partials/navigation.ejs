@@ -65,6 +65,28 @@
       </div>
     </sort-options>
   </div>
+  <div class="sidebar-nav__view-options">
+    <view-options>
+      <div class="view-options__inner">
+        <button class="view-options__current-option" data-action="toggle-view-options">
+          <span data-current>
+            <!-- This is rendered by JavaScript -->
+          </span>
+          <svg>
+            <use xlink:href="#eye"></use>
+          </svg>
+        </button>
+        <div class="view-options__options">
+          <input type="radio" name="view-option" value="yes" data-label="Show rated" id="view-option-rated">
+          <label for="view-option-rated">Show rated</label>
+          <input type="radio" name="view-option" value="no" data-label="Show unrated" id="view-option-unrated">
+          <label for="view-option-unrated">Show unrated</label>
+          <input type="radio" name="view-option" value="all" data-label="Show all" id="view-option-all">
+          <label for="view-option-all">Show all</label>
+        </div>
+      </div>
+    </view-options>
+  </div>
 
   <h2>
     Actions
