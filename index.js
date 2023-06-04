@@ -28,12 +28,12 @@ app.use(express.json());
 
 /* --- Main page (After Auth) --- */
 app.get('/', async (req, res) => {
-  if (!req.signedCookies.login) {
+  if (!req.signedCookies.userId) {
     return res.redirect('/auth');
   }
 
   const user = {
-    username: req.signedCookies.username,
+    userName: req.signedCookies.userName,
     avatar: req.signedCookies.avatar
   }
 
@@ -99,19 +99,23 @@ app.get('/auth/discord', async(req, res) => {
         }
       });
 
+      const discordName = userDataResponse.data.username;
+      const discordId = userDataResponse.data.id;
+
       const user = {
-        username: userDataResponse.data.username,
-        avatar: `https://cdn.discordapp.com/avatars/${ userDataResponse.data.id }/${ userDataResponse.data.avatar }.png`
+        userName: discordName,
+        userId: discordId,
+        avatar: `https://cdn.discordapp.com/avatars/${ discordId }/${ userDataResponse.data.avatar }.png`
       }
 
       const expirationDuration = 3 * 24 * 60 * 60 * 1000; // 3 day
 
-      res.cookie('login', true, {
+      res.cookie('userName', user.userName, {
         signed: true,
         maxAge: expirationDuration
       });
 
-      res.cookie('username', user.username, {
+      res.cookie('userId', user.userId, {
         signed: true,
         maxAge: expirationDuration
       });
@@ -130,7 +134,7 @@ app.get('/auth/discord', async(req, res) => {
 
 /* --- Frontend to Backend endpoints --- */
 app.get('/getimages', async (req, res) => {
-  const user = req.signedCookies.username;
+  const user = req.signedCookies.userId;
   const filters = req.query.filters;
   const page = req.query.page;
   const sort = req.query.sort;
@@ -175,7 +179,7 @@ app.get('/gettags', async (req, res) => {
 app.post('/updaterating', async (req, res) => {
   const filename = req.body.filename;
   const rating = req.body.rating;
-  const user = req.signedCookies.username;
+  const user = req.signedCookies.userId;
 
   try {
     await axios.post(`${ API_URL }/updaterating`, { filename: filename, rating: rating, user: user });
@@ -187,7 +191,7 @@ app.post('/updaterating', async (req, res) => {
 });
 
 app.get('/getimageneighbours', async (req, res) => {
-  const user = req.signedCookies.username;
+  const user = req.signedCookies.userId;
   const filename = req.query.filename;
   const filters = req.query.filters;
   const sort = req.query.sort;
@@ -205,7 +209,7 @@ app.get('/getimageneighbours', async (req, res) => {
 });
 
 app.get('/getstats', async (req, res) => {
-  const user = req.signedCookies.username;
+  const user = req.signedCookies.userId;
   
   try {
     const stats = await axios.get(`${ API_URL }/getstats?user=${ user }`);
