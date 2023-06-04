@@ -42,16 +42,16 @@ app.get('/', async (req, res) => {
   ejs.renderFile('./assets/pages/booru.ejs', (err, bodyContent) => {
     if (err) {
       console.log('Error: ', err);
-      return res.send('Some error occurred!');
+      return res.status(400).send('Some error occurred!');
     }
 
     ejs.renderFile('./assets/index.ejs', { page: bodyContent, user: user }, (err, html) => {
       if (err) {
         console.log('Error: ', err);
-        return res.send('Some error occurred!');
+        return res.status(400).send('Some error occurred!');
       }
 
-      return res.send(html);
+      return res.status(200).send(html);
     });
   });
 });
@@ -64,16 +64,16 @@ app.get('/auth', (req, res) => {
   ejs.renderFile('./assets/pages/auth.ejs', { redirectUri: redirectUri }, (err, bodyContent) => {
     if (err) {
       console.log('Error: ', err);
-      return res.send('Some error occurred!');
+      return res.status(400).send('Some error occurred!');
     }
 
     ejs.renderFile('./assets/index.ejs', { page: bodyContent, user: null }, (err, html) => {
       if (err) {
         console.log('Error: ', err);
-        return res.send('Some error occurred!');
+        return res.status(400).send('Some error occurred!');
       }
 
-      return res.send(html);
+      return res.status(200).send(html);
     });
   });
 });
@@ -130,7 +130,7 @@ app.get('/auth/discord', async(req, res) => {
       return res.redirect('/');
   } catch (error) {
     console.log('Error', error);
-    return res.send('Some error occurred!');
+    return res.status(400).send('Some error occurred!');
   } 
 });
 
@@ -159,7 +159,7 @@ app.get('/getimage', async (req, res) => {
 
   try {
     const image = await axios.get(`${ API_URL }/getimage?filename=${ filename }`, { responseType: 'arraybuffer' });
-    return res.send(image.data);
+    return res.status(200).send(image.data);
   } catch (error) {
     console.log('Error', error);
     return res.status(400).send({ error: 'Some error occurred!' });
@@ -171,7 +171,7 @@ app.get('/gettags', async (req, res) => {
 
   try {
     const tags = await axios.get(`${ API_URL }/getimagetags?filename=${ filename }`);
-    return res.send(tags.data);
+    return res.status(200).send(tags.data);
   } catch (error) {
     console.log('Error', error);
     return res.status(400).send({ error: 'Some error occurred!' });

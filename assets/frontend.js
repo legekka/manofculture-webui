@@ -552,12 +552,17 @@ class ViewModal extends HTMLElement {
     }).then(function (response) {
       if (response.status !== 200) {
         document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Couldn't fetch tags" } }));
+        return null;
       }
 
       return response.json();
     }).then(function (data) {
-      return data.tags;
+      return (data !== null ? data.tags : null);
     });
+
+    if (tags === null) {
+      return;
+    }
 
     const UrlActiveTags = new URL(window.location.href).searchParams.get('filters') || '';
     const activeTags = UrlActiveTags.split(',');
@@ -673,6 +678,7 @@ class ViewModal extends HTMLElement {
 
     if (response.status !== 200) {
       document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Couldn't fetch neighbour images" } }));
+      return;
     }
 
     const result = await response.json();
@@ -762,10 +768,15 @@ class ViewStats extends HTMLElement {
     fetch('/getstats').then(function (response) {
       if (response.status !== 200) {
         document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Couldn't fetch stats" } }));
+        return null;
       }
 
       return response.json();
     }).then(function (data) {
+      if (data === null) {
+        return;
+      }
+
       document.dispatchEvent(new CustomEvent('sidemenu:close'));
 
       if (window.echartsLoaded === true) {
