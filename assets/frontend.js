@@ -161,6 +161,7 @@ class SidebarNavigation extends HTMLElement {
 
   closeSidemenu() {
     this.classList.remove('open');
+    document.querySelector('sticky-navigation').classList.remove('force-open');
     document.documentElement.classList.remove('overflow-hidden');
   }
 }
