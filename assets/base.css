@@ -170,6 +170,30 @@ select {
   }
 }
 
+.no-js sticky-navigation,
+.no-js sidebar-navigation,
+.no-js view-modal,
+.no-js view-stats,
+.no-js file-upload,
+.no-js toast-message,
+.no-js .wave,
+.no-js .page-wrapper {
+  display: none;
+}
+
+.no-js-message {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 0 50px;
+}
+
+.no-js-message p {
+  font-size: 3rem;
+  line-height: 1.5em;
+  text-align: center;
+}
+
 /* --- Variables --- */
 :root {
   --background-color: #2e3440;

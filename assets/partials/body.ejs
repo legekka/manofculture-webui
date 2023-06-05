@@ -1,5 +1,15 @@
 
-<body>
+<body class="no-js">
+  <noscript>
+    <div class="no-js-message">
+      <p>
+        <strong>JavaScript is disabled!</strong> Please enable JavaScript in your browser or upgrade to a JavaScript-capable browser to use this website.
+      </p>
+    </div>
+  </noscript>
+  <script>
+    document.body.classList.remove('no-js');
+  </script>
   <% if (user !== null) { %>
     <!-- Common svg definitions -->
     <!-- Plus sign -->

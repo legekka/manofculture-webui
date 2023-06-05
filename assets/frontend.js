@@ -1,10 +1,10 @@
-function debounce (fn, delay = 500) {
+function debounce(fn, delay = 500) {
   var timer;
   var pendingPromise;
   var context;
   var args;
 
-  return function debouncedFn () {
+  return function debouncedFn() {
     context = this;
     args = arguments;
 
@@ -118,7 +118,7 @@ function generateRandomFilename(extension = 'jpg') {
   return `${ Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) }.${ extension }`;
 }
 
-document.addEventListener('lazyloaded', function (e){
+document.addEventListener('lazyloaded', function (e) {
   if (e.target.getAttribute('src') === '') {
     return;
   }
