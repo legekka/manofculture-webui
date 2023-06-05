@@ -342,6 +342,24 @@ svg {
   z-index: 1;
 }
 
+.grid.empty {
+  place-items: center;
+}
+
+.empty-container {
+  text-align: center;
+  grid-column: 1 / -1;
+}
+
+.empty-container.hidden {
+  display: none !important;
+}
+
+.empty-container h2 {
+  font-size: 3.5rem;
+  line-height: 1.5em;
+}
+
 .grid-item {
   height: 0;
   padding-bottom: 100%;

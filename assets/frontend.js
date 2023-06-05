@@ -190,8 +190,11 @@ class ImageGrid extends HTMLElement {
     this.currentSort = '';
     this.currentRated = '';
     
+    this.gridWrapper = this.querySelector('.grid-wrapper');
     this.gridItems = this.querySelectorAll('.grid-item');
     this.imagesData = [];
+    this.emptyContainer = this.querySelector('.empty-container');
+    this.navigationControls = this.querySelectorAll('pagination-nav');
 
     document.addEventListener('imagegrid:params:changed', this.getImagesData.bind(this));
     document.addEventListener('imagegrid:images:loaded', this.onImagesLoaded.bind(this));
@@ -232,6 +235,22 @@ class ImageGrid extends HTMLElement {
     const response = await images.json();
 
     this.imagesData = response.images;
+
+    if (this.imagesData.length === 0) {
+      this.gridWrapper.classList.add('empty');
+      this.emptyContainer.classList.remove('hidden');
+
+      for (const control of this.navigationControls) {
+        control.classList.add('hidden');
+      }
+    } else {
+      this.gridWrapper.classList.remove('empty');
+      this.emptyContainer.classList.add('hidden');
+
+      for (const control of this.navigationControls) {
+        control.classList.remove('hidden');
+      }
+    }
 
     document.dispatchEvent(new CustomEvent('imagegrid:images:loaded'));
     document.dispatchEvent(new CustomEvent('pagination:page:changed', { detail: { currentPage: this.currentPage, maxPages: response.max_page } }));
