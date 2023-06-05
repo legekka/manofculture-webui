@@ -14,9 +14,12 @@ const express = require('express');
 const axios = require('axios');
 const cookieParser = require('cookie-parser');
 const ejs = require('ejs');
+const multer = require('multer');
+const FormData = require("form-data");
 
 /* --- Global consts --- */
 const app = express();
+const upload = multer();
 const fullAppUrl = `${ APP_URL }${ typeof APP_PORT !== 'undefined' ? `:${ APP_PORT }` : '' }`;
 
 /* --- Express packages --- */
@@ -256,6 +259,25 @@ app.get('/removerating', async(req, res) => {
   } catch {
     console.log('Error', error);
     return res.status(400).send({ error: 'Some error occurred!' });
+  }
+});
+
+app.post('/uploadfile', upload.single('file'), async (req, res) => {
+  const user = req.signedCookies.userId;
+  const rating = req.body.rating;
+  const file = req.file;
+  const formData = new FormData();
+
+  formData.append("image", file.buffer, { filename: file.originalname });
+  formData.append('user', user);
+  formData.append('rating', rating);
+
+  try {
+    await axios.post(`${ API_URL }/addrating`, formData, { headers: formData.getHeaders() });
+    return res.status(200).send({ success: true });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ error: 'Some error occurred!' });
   }
 });
 

@@ -114,6 +114,10 @@ function getRankColor(rank) {
   }
 }
 
+function generateRandomFilename(extension = 'jpg') {
+  return `${ Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) }.${ extension }`;
+}
+
 document.addEventListener('lazyloaded', function (e){
   if (e.target.getAttribute('src') === '') {
     return;
@@ -1204,3 +1208,246 @@ class ViewOptions extends HTMLElement {
 }
 
 window.customElements.define('view-options', ViewOptions);
+
+class FileUpload extends HTMLElement {
+  constructor() {
+    super();
+
+    this.inner = this.querySelector('.file-upload__inner');
+    this.loadingCircle = this.querySelector('.file-upload__loading-circle');
+    this.opener = document.querySelector('[data-action="open-file-upload"]');
+    this.closeButton = this.querySelector('.file-upload__close [data-action="close-file-upload"]');
+    this.closeButtonAfter = this.querySelector('.file-upload__actions [data-action="close-file-upload"]');
+    this.submitButton = this.querySelector('[data-action="upload-file"]');
+    this.resetButton = this.querySelector('[data-action="upload-new-file"]');
+    this.fileInput = this.querySelector('input[type="file"]');
+    this.fileInputOpener = this.querySelector('[data-action="open-explorer"]');
+    this.dropArea = this.querySelector('[data-drop-area]');
+    this.ratingControls = this.querySelectorAll('input[type="radio"]');
+    this.acceptedFileTypes = ["image/jpg", "image/jpeg", "image/png"];
+    this.selectedRating = null;
+    this.pageWrapper = document.querySelector('.page-wrapper');
+    this.imagePreview = this.querySelector('.file-upload__image-preview img');
+    this.hint = this.querySelector('.file__drop-area--hint');
+    this.hintError = this.querySelector('.file__drop-area--hint-error');
+    this.currentFile = null;
+
+    this.addEventListener('click', this.blurModal.bind(this));
+    this.opener.addEventListener('click', this.openFileUpload.bind(this));
+    this.closeButton.addEventListener('click', this.closeFileUpload.bind(this));
+    this.closeButtonAfter.addEventListener('click', this.closeFileUpload.bind(this));
+    this.resetButton.addEventListener('click', this.resetFileUpload.bind(this));
+    this.fileInputOpener.addEventListener('click', this.openFileInput.bind(this));
+    this.fileInput.addEventListener('change', this.handleFileInput.bind(this));
+
+    for (const ratingControl of this.ratingControls) {
+      ratingControl.addEventListener('change', this.handleRatingChange.bind(this));
+    }
+
+    const dragEnterEvents = [
+      'dragenter',
+      'dragover'
+    ];
+    const dragLeaveEvents = [
+      'dragleave',
+      'drop'
+    ];
+
+    for (const dragEnterEvent of dragEnterEvents) {
+      this.dropArea.addEventListener(dragEnterEvent, this.highlightArea.bind(this));
+    }
+
+    for (const dragLeaveEvent of dragLeaveEvents) {
+      this.dropArea.addEventListener(dragLeaveEvent, this.unHighlightArea.bind(this));
+    }
+
+    this.dropArea.addEventListener('drop', this.handleFileDropped.bind(this));
+    this.submitButton.addEventListener('click', this.uploadFile.bind(this));
+  }
+
+  openFileInput() {
+    this.fileInput.click();
+  }
+
+  handleFileInput(event) {
+    const files = event.target.files;
+
+    this.handleFiles(files);
+  }
+
+  handleRatingChange(event) {
+    const newValue = event.target.value;
+
+    this.selectedRating = newValue;
+  }
+
+  openFileUpload() {
+    this.classList.remove('hidden');
+    this.pageWrapper.classList.add('blurred');
+    document.documentElement.classList.add('overflow-hidden');
+
+    document.dispatchEvent(new CustomEvent('sidemenu:close'));
+  }
+
+  blurModal(event) {
+    if (event.target.closest('.file-upload__inner') !== null || this.classList.contains('loading')) {
+      return;
+    }
+
+    this.closeFileUpload();
+  }
+
+  highlightArea(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.dropArea.classList.add('highlight');
+  }
+
+  unHighlightArea(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.dropArea.classList.remove('highlight');
+  }
+
+  showHint() {
+    this.hint.classList.remove('hidden');
+  }
+
+  hideHint() {
+    this.hint.classList.add('hidden');
+  }
+
+  showError() {
+    this.hintError.classList.remove('hidden');
+  }
+
+  hideError() {
+    this.hintError.classList.add('hidden');
+  }
+
+  closeFileUpload() {
+    this.classList.add('hidden');
+    this.pageWrapper.classList.remove('blurred');
+    document.documentElement.classList.remove('overflow-hidden');
+
+    this.resetFileUpload();
+  }
+
+  handleFileDropped(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const dataTransfer = event.dataTransfer;
+    const files = dataTransfer.files;
+
+    this.handleFiles(files);
+  }
+
+  handleFiles(files) {
+    const droppedFiles = Array.from(files);
+
+    if (files.length > 1) {
+      document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Multiple file uploads is forbidden" } }));
+      return;
+    }
+
+    const currentFile = droppedFiles[0];
+    const preview = this.previewFile(currentFile);
+
+    if (preview) {
+      this.currentFile = preview;
+      this.hideHint();
+      this.hideError();
+    }
+  }
+
+  async uploadFile() {
+    if (this.currentFile === null) {
+      document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "The provided file is empty" } }));
+      return;
+    }
+
+    if (this.selectedRating === null) {
+      document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "A rating must be provided" } }));
+      return;
+    }
+
+    const extension = this.currentFile.name.split('.').pop();
+    const formData = new FormData();
+
+    formData.append('file', this.currentFile, generateRandomFilename(extension));
+    formData.append('rating', this.selectedRating);
+
+    this.classList.add('loading');
+    this.inner.classList.add('blurred');
+    this.loadingCircle.classList.remove('hidden');
+
+    const response = await fetch('/uploadfile', {
+      method: 'POST',
+      body: formData
+    });
+
+    this.classList.remove('loading');
+    this.inner.classList.remove('blurred');
+    this.loadingCircle.classList.add('hidden');
+
+    if (response.status !== 200) {
+      document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Server error" } }));
+      return;
+    }
+
+    this.submitButton.classList.add('hidden');
+    this.resetButton.classList.remove('hidden');
+    this.closeButtonAfter.classList.remove('hidden');
+
+    document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'success', message: "File has been uploaded" } }));
+    document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: 1 } }));
+  }
+
+  resetFileUpload() {
+    setTimeout(function () {
+      this.currentFile = null;
+
+      const selectedRating = this.querySelector('input[type="radio"]:checked');
+  
+      if (selectedRating !== null) {
+        selectedRating.checked = false;
+      }
+  
+      this.submitButton.classList.remove('hidden');
+      this.resetButton.classList.add('hidden');
+      this.closeButtonAfter.classList.add('hidden');
+      this.hint.classList.remove('hidden');
+      this.hintError.classList.add('hidden');
+      this.imagePreview.src = '';
+    }.bind(this), 200);
+  }
+
+  previewFile(file) {
+    const reader = new FileReader();
+    const validFileType = this.acceptedFileTypes.includes(file.type);
+
+    reader.readAsDataURL(file);
+    reader.onloadend = function() {
+      if (!validFileType) {
+        this.imagePreview.src = '';
+        this.hideHint();
+        this.showError();
+        document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Invalid file type" } }));
+      } else {
+        this.imagePreview.src = reader.result;
+        this.hideHint();
+      }
+    }.bind(this);
+
+    if (!validFileType) {
+      return false;
+    }
+
+    return file;
+  }
+}
+
+window.customElements.define('file-upload', FileUpload);

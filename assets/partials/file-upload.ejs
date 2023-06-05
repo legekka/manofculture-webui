@@ -1,0 +1,111 @@
+<file-upload class="hidden">
+  <div class="file-upload__inner">
+    <div class="file-upload__loading-circle hidden">
+      <svg fill="none" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" cx="50" cy="50" r="30"/>
+      </svg> 
+    </div>
+    <div class="file-upload__close">
+      <button type="button" data-action="close-file-upload">
+        <svg>
+          <use xlink:href="#plus"></use>
+        </svg>
+      </button>
+    </div>
+    <div class="file-upload__image-container">
+      <div class="file-upload__image-preview">
+        <img src="">
+      </div>
+      <div class="file__drop-area" data-drop-area>
+        <input type="file" style="display: none;">
+        <div class="file__drop-area--hint">
+          <span class="hint">
+            Drag and drop an image file (
+              <span class="filetype">.jpg</span>,&nbsp;
+              <span class="filetype">.jpeg</span>,&nbsp;
+              <span class="filetype">.png</span>
+            ) or click&nbsp;
+          </span>
+          <button type="button" data-action="open-explorer">Here</button>
+          <span>&nbsp;to select a file manually.</span>
+        </div>
+        <div class="file__drop-area--hint-error hidden">
+          <span class="hint">
+            The provided file type is invalid. Only&nbsp;
+              <span class="filetype">.jpg</span>,&nbsp;
+              <span class="filetype">.jpeg</span>&nbsp;and&nbsp;
+              <span class="filetype">.png</span>&nbsp;
+            file types are accepted.
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="file-upload__info-container">
+      <div class="file-upload__rating-container">
+        <h2>Rating</h2>
+        <div class="file-upload__rating">
+          <input type="radio" name="new_rating" id="new_rating_0" value="0">
+          <label for="new_rating_0">
+            <img src="rating_0.png">
+          </label>
+          <input type="radio" name="new_rating" id="new_rating_1" value="0.17">
+          <label for="new_rating_1">
+            <img src="rating_1.png">
+          </label>
+          <input type="radio" name="new_rating" id="new_rating_2" value="0.33">
+          <label for="new_rating_2">
+            <img src="rating_2.png">
+          </label>
+          <input type="radio" name="new_rating" id="new_rating_3" value="0.5">
+          <label for="new_rating_3">
+            <img src="rating_3.png">
+          </label>
+          <input type="radio" name="new_rating" id="new_rating_4" value="0.67">
+          <label for="new_rating_4">
+            <img src="rating_4.png">
+          </label>
+          <input type="radio" name="new_rating" id="new_rating_5" value="0.83">
+          <label for="new_rating_5">
+            <img src="rating_5.png">
+          </label>
+          <input type="radio" name="new_rating" id="new_rating_6" value="1">
+          <label for="new_rating_6">
+            <img src="rating_6.png">
+          </label>
+        </div>
+      </div>
+      <div class="file-upload__actions">
+        <button type="button" data-action="upload-file">
+          <span>
+            <svg>
+              <use xlink:href="#upload"></use>
+            </svg>
+          </span>
+          <span>
+            Upload
+          </span>
+        </button>
+        <button type="button" class="hidden" data-action="upload-new-file">
+          <span>
+            <svg>
+              <use xlink:href="#upload"></use>
+            </svg>
+          </span>
+          <span>
+            Upload another one
+          </span>
+        </button>
+        <button type="button" class="hidden" data-action="close-file-upload">
+          <span>
+            <svg>
+              <use xlink:href="#plus"></use>
+            </svg>
+          </span>
+          <span>
+            Close
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</file-upload>
