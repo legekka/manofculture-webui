@@ -1301,11 +1301,11 @@ class FileUpload extends HTMLElement {
   }
 
   openFileUpload() {
+    document.dispatchEvent(new CustomEvent('sidemenu:close'));
+
     this.classList.remove('hidden');
     this.pageWrapper.classList.add('blurred');
     document.documentElement.classList.add('overflow-hidden');
-
-    document.dispatchEvent(new CustomEvent('sidemenu:close'));
   }
 
   blurModal(event) {
