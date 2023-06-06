@@ -732,6 +732,15 @@ sidebar-navigation h2 {
   padding: 4rem 2rem;
   margin: -2rem -2rem 2rem -2rem;
   background-color: var(--background-light);
+  position: relative;
+}
+
+.sidebar-nav__profile--name {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
 }
 
 .sidebar-nav__profile--avatar {
@@ -742,8 +751,12 @@ sidebar-navigation h2 {
 }
 
 .sidebar-nav__profile h2 {
-  font-size: 3rem;
-  margin: 0 0 0 2rem;
+  font-size: 2.7rem;
+  margin: 0;
+  padding: 2rem 2rem 2rem 14rem;
+  text-shadow: -2px 2px 2px rgba(0, 0, 0, 0.3);
+  direction: rtl;
+  text-align: left;
 }
 
 .sidebar-nav__actions {
@@ -1268,6 +1281,7 @@ view-modal.hidden .view-modal__inner {
   border-radius: 2rem;
   top: 50%;
   transform: translateY(-50%);
+  transition: opacity 0.2s ease-in-out;
 }
 
 .view-modal__image-container > button > svg {
@@ -1285,8 +1299,16 @@ view-modal.hidden .view-modal__inner {
   right: 2rem;
 }
 
+.view-modal__image-container button:disabled {
+  pointer-events: none;
+  opacity: 0.8;
+  transition: all 0.2s ease-in-out;
+}
+
 .view-modal__image-container button.hidden {
   pointer-events: none;
+  opacity: 0 !important;
+  transition: all 0.2s ease-in-out;
 }
 
 .view-modal__info-container {
@@ -1805,6 +1827,10 @@ file-upload.hidden .file-upload__inner {
   border: 2px dashed var(--accent-3);
   transition: border 0.2s ease-in-out;
   border-radius: 10px;
+}
+
+.file__drop-area.error {
+  border: 2px dashed var(--highlight-1);
 }
 
 .file__drop-area.highlight {

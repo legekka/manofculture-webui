@@ -15,7 +15,7 @@ const axios = require('axios');
 const cookieParser = require('cookie-parser');
 const ejs = require('ejs');
 const multer = require('multer');
-const FormData = require("form-data");
+const FormData = require('form-data');
 
 /* --- Global consts --- */
 const app = express();
@@ -146,7 +146,7 @@ app.get('/getimages', async (req, res) => {
   const rated = req.query.rated;
 
   if (!user) {
-    app.redirect('/auth');
+    res.redirect('/auth');
   }
 
   const pageQuery = typeof page !== 'undefined' ? `&page=${ page }` : '';
@@ -193,7 +193,7 @@ app.post('/updaterating', async (req, res) => {
   const user = req.signedCookies.userId;
 
   if (!user) {
-    app.redirect('/auth');
+    res.redirect('/auth');
   }
 
   try {
@@ -213,7 +213,7 @@ app.get('/getimageneighbours', async (req, res) => {
   const rated = req.query.rated;
 
   if (!user) {
-    app.redirect('/auth');
+    res.redirect('/auth');
   }
 
   const filtersQuery = typeof filters !== 'undefined' ? `&filters=${ filters }` : '';
@@ -233,7 +233,7 @@ app.get('/getstats', async (req, res) => {
   const user = req.signedCookies.userId;
 
   if (!user) {
-    app.redirect('/auth');
+    res.redirect('/auth');
   }
   
   try {
@@ -250,7 +250,7 @@ app.get('/removerating', async(req, res) => {
   const user = req.signedCookies.userId;
 
   if (!user) {
-    app.redirect('/auth');
+    res.redirect('/auth');
   }
 
   try {
@@ -268,6 +268,10 @@ app.post('/uploadfile', upload.single('file'), async (req, res) => {
   const file = req.file;
   const formData = new FormData();
 
+  if (!user) {
+    res.redirect('/auth');
+  }
+
   formData.append("image", file.buffer, { filename: file.originalname });
   formData.append('user', user);
   formData.append('rating', rating);
@@ -283,5 +287,5 @@ app.post('/uploadfile', upload.single('file'), async (req, res) => {
 
 /* --- Start app --- */
 app.listen(APP_PORT, () => {
-  console.log(`App listening at ${ fullAppUrl }`);
+  console.log(`Man of Culture WebUI is running at ${ fullAppUrl }`);
 });

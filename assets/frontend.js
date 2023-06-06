@@ -776,8 +776,8 @@ class ViewModal extends HTMLElement {
     const sortQuery = currentSort !== '' ? `&sort=${ currentSort }` : '';
     const ratedQuery = currentRated !== '' ? `&rated=${ currentRated }` : '';
 
-    this.nextButton.classList.add('hidden');
-    this.previousButton.classList.add('hidden');
+    this.nextButton.classList.remove('hidden');
+    this.previousButton.classList.remove('hidden');
 
     const response = await fetch(`/getimageneighbours?filename=${ fileName }${ tagsQuery }${ sortQuery }${ ratedQuery }`);
 
@@ -791,16 +791,16 @@ class ViewModal extends HTMLElement {
     if (result.next_image.image !== null) {
       this.nextImage = result.next_image.image;
       this.nextImageRating = result.next_image.rating;
-      this.nextButton.classList.remove('hidden');
     } else {
+      this.nextButton.classList.add('hidden');
       this.nextImage = null;
     }
 
     if (result.prev_image.image !== null) {
       this.previousImage = result.prev_image.image;
       this.previousImageRating = result.prev_image.rating;
-      this.previousButton.classList.remove('hidden');
     } else {
+      this.previousButton.classList.add('hidden');
       this.previousImage = null;
     }
 
@@ -1368,6 +1368,7 @@ class FileUpload extends HTMLElement {
     const droppedFiles = Array.from(files);
 
     if (files.length > 1) {
+      this.dropArea.classList.add('error');
       document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Multiple file uploads is forbidden" } }));
       return;
     }
@@ -1384,9 +1385,13 @@ class FileUpload extends HTMLElement {
 
   async uploadFile() {
     if (this.currentFile === null) {
+      this.dropArea.classList.add('error');
       document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "The provided file is empty" } }));
       return;
     }
+
+    this.dropArea.classList.remove('error');
+    this.dropArea.classList.add('highlight');
 
     if (this.selectedRating === null) {
       document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "A rating must be provided" } }));
@@ -1440,6 +1445,8 @@ class FileUpload extends HTMLElement {
       this.closeButtonAfter.classList.add('hidden');
       this.hint.classList.remove('hidden');
       this.hintError.classList.add('hidden');
+      this.dropArea.classList.remove('error');
+      this.dropArea.classList.remove('highlight');
       this.imagePreview.src = '';
     }.bind(this), 200);
   }
@@ -1454,10 +1461,14 @@ class FileUpload extends HTMLElement {
         this.imagePreview.src = '';
         this.hideHint();
         this.showError();
+        this.dropArea.classList.remove('highlight');
+        this.dropArea.classList.add('error');
         document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Invalid file type" } }));
       } else {
         this.imagePreview.src = reader.result;
         this.hideHint();
+        this.dropArea.classList.add('highlight');
+        this.dropArea.classList.remove('error');
       }
     }.bind(this);
 
