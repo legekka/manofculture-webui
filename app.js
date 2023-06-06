@@ -8,6 +8,7 @@ const COOKIE_SECRET = process.env.COOKIE_SECRET;
 const API_URL = process.env.API_URL;
 const APP_URL = process.env.APP_URL;
 const APP_PORT = process.env.APP_PORT;
+const PUBLIC_URL = process.env.PUBLIC_URL;
 
 /* --- Reqs --- */
 const express = require('express');
@@ -61,7 +62,7 @@ app.get('/', async (req, res) => {
 
 /* --- Authentication --- */
 app.get('/auth', (req, res) => {
-  const encodedAppUrl = encodeURIComponent(`${ fullAppUrl }/auth/discord`);
+  const encodedAppUrl = encodeURIComponent(`${ PUBLIC_URL }/auth/discord`);
   const redirectUri = `https://discord.com/api/oauth2/authorize?client_id=${ CLIENT_ID }&redirect_uri=${ encodedAppUrl }&response_type=code&scope=identify`;
 
   ejs.renderFile('./assets/pages/auth.ejs', { redirectUri: redirectUri }, (err, bodyContent) => {
@@ -89,7 +90,7 @@ app.get('/auth/discord', async(req, res) => {
   params.append('client_secret', CLIENT_SECRET);
   params.append('grant_type', 'authorization_code');
   params.append('code', code);
-  params.append('redirect_uri', `${ fullAppUrl }/auth/discord`);
+  params.append('redirect_uri', `${ PUBLIC_URL }/auth/discord`);
 
   try {
       const response = await axios.post('https://discord.com/api/oauth2/token', params);
