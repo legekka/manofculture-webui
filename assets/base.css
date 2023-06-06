@@ -719,6 +719,7 @@ sidebar-navigation h2 {
   transform-origin: center center;
   background: var(--background-lightest);
   border-radius: 2em;
+  z-index: 1;
 }
 
 [data-action="close-sidemenu"] svg {
