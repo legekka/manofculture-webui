@@ -206,13 +206,12 @@ class ImageGrid extends HTMLElement {
     this.currentTags = [];
     this.currentSort = '';
     this.currentRated = '';
-    
+
     this.gridWrapper = this.querySelector('.grid-wrapper');
     this.gridItems = this.querySelectorAll('.grid-item');
     this.imagesData = [];
     this.emptyContainer = this.querySelector('.empty-container');
     this.navigationControls = this.querySelectorAll('pagination-nav');
-    /** @type{HTMLInputElement} */
     this.infiniteScrolling = document.querySelector('#infinite-toggle-input');
 
 
@@ -308,7 +307,6 @@ class ImageGrid extends HTMLElement {
       }
 
       if (typeof this.navigationControls[1].observer !== 'undefined') {
-        /** @type{IntersectionObserver} */
         const observer = this.navigationControls[1].observer;
         observer.disconnect();
       }
@@ -433,7 +431,6 @@ class ImageGrid extends HTMLElement {
     }
 
     if (this.infiniteScrolling.checked && !this.firstLoad) {
-      console.log(imageData);
       for (const image of imageData) {
         const clone = this.gridItems[0].cloneNode(true);
 
@@ -688,7 +685,7 @@ class JumpToPage extends HTMLElement {
     }
 
     const newPage = Number(this.input.value) > 1 ? Number(this.input.value) : 1;
-    
+
     document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: newPage } }));
     document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: newPage } }));
   }
@@ -806,7 +803,7 @@ class ViewModal extends HTMLElement {
     if (event.keyCode === 27) {
       this.closeModal();
     }
-  } 
+  }
 
   openModal(event) {
     this.gridItem = event.detail.gridItem;
@@ -1085,7 +1082,7 @@ class ViewStats extends HTMLElement {
     if (event.keyCode === 27) {
       this.closeStats();
     }
-  } 
+  }
 
   blurModal(event) {
     if (event.target.closest('.view-stats__inner') !== null) {
@@ -1139,7 +1136,7 @@ class ViewStats extends HTMLElement {
     }
 
     this.ratingInfoContainer.innerHTML = ratingHtml;
-    this.backendInfoContainer.innerHTML = backendHtml; 
+    this.backendInfoContainer.innerHTML = backendHtml;
   }
 
   loadChart(data) {
@@ -1224,36 +1221,36 @@ class ToastMessage extends HTMLElement {
     if (this.type !== event.detail.type) {
       return;
     }
-  
+
     const message = event.detail.message;
     const self = this;
-  
+
     function sendMessage(message) {
       this.messageContainer.innerText = message;
       this.classList.add('open');
-  
+
       if (this.timeoutId) {
         clearTimeout(this.timeoutId);
       }
-  
+
       this.timeoutId = setTimeout(function () {
         this.classList.remove('open');
         this.timeoutId = null;
       }.bind(this), 5000);
     }
-  
+
     const existingMessage = document.querySelector(`toast-message.open`);
-  
+
     if (existingMessage !== null) {
       existingMessage.classList.remove('open');
-  
+
       setTimeout(function () {
         sendMessage.call(self, message);
       }, 200);
-  
+
       return;
     }
-  
+
     sendMessage.call(self, message);
   }
 }
@@ -1494,7 +1491,7 @@ class FileUpload extends HTMLElement {
     if (event.keyCode === 27) {
       this.closeFileUpload();
     }
-  } 
+  }
 
   openFileUpload() {
     document.dispatchEvent(new CustomEvent('sidemenu:close'));
@@ -1637,11 +1634,11 @@ class FileUpload extends HTMLElement {
       this.currentFile = null;
 
       const selectedRating = this.querySelector('input[type="radio"]:checked');
-  
+
       if (selectedRating !== null) {
         selectedRating.checked = false;
       }
-  
+
       this.submitButton.classList.remove('hidden');
       this.resetButton.classList.add('hidden');
       this.closeButtonAfter.classList.add('hidden');
@@ -1731,7 +1728,7 @@ class AboutModal extends HTMLElement {
     if (event.keyCode === 27) {
       this.closeModal();
     }
-  } 
+  }
 }
 
 window.customElements.define('about-modal', AboutModal);
