@@ -516,7 +516,7 @@ class JumpToPage extends HTMLElement {
     this.minus = this.querySelector('[data-action="subtract"]');
     this.maxPages = 1;
 
-    this.opener.addEventListener('click', this.toggleControls.bind(this));
+    this.opener.addEventListener('click', function (event) { this.toggleControls(event); }.bind(this));
     this.plus.addEventListener('click', this.incrementPage.bind(this));
     this.minus.addEventListener('click', this.decrementPage.bind(this));
     this.input.addEventListener('input', this.onInput.bind(this));
@@ -532,9 +532,27 @@ class JumpToPage extends HTMLElement {
     this.input.setAttribute('max', this.maxPages);
   }
 
-  toggleControls() {
+  toggleControls(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
     this.opener.classList.toggle('open');
     this.controls.classList.toggle('hidden');
+
+    if (this.controls.classList.contains('hidden')) {
+      document.documentElement.removeEventListener('click', this.blurEventListener.bind(this));
+    } else {
+      document.documentElement.addEventListener('click', this.blurEventListener.bind(this));
+    }
+  }
+
+  blurEventListener(event) {
+    if (event.target.closest('.jump-to-page__controls') !== null) {
+      return;
+    }
+
+    this.opener.classList.remove('open');
+    this.controls.classList.add('hidden');
   }
 
   incrementPage() {
