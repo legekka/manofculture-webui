@@ -791,8 +791,8 @@ sidebar-navigation h2 {
 }
 
 .sidebar-nav__actions svg {
-  width: 1.5em;
-  height: 1.5em;
+  width: 1.8em;
+  height: 1.8em;
   margin-right: 1em;
 }
 
@@ -1045,6 +1045,7 @@ jump-to-page {
 [data-action="open-controls"],
 [data-action="open-stats"],
 [data-action="open-file-upload"],
+.checkbox-label,
 [data-action="remove-rating"],
 [data-action="upload-file"],
 [data-action="upload-new-file"],
@@ -1077,6 +1078,9 @@ jump-to-page {
 [data-action="open-stats"]:hover,
 [data-action="open-stats"]:active,
 [data-action="open-stats"]:focus-visible,
+.checkbox-label:hover,
+.checkbox-label:active,
+.checkbox-label:focus-visible,
 [data-action="open-file-upload"]:hover,
 [data-action="open-file-upload"]:active,
 [data-action="open-file-upload"]:focus-visible,
@@ -1096,6 +1100,61 @@ jump-to-page {
 .file-upload__actions [data-action="close-file-upload"]:active,
 .file-upload__actions [data-action="close-file-upload"]:focus {
   background-color: var(--highlight-1);
+}
+
+.checkbox-container .checkbox {
+  display: none;
+}
+.checkbox-container .checkbox-label {
+  position: relative;
+  padding-left: calc(1.5rem + 45px);
+  flex-basis: 100%;
+}
+.checkbox-container .checkbox-label::before {
+  content: '';
+  position: absolute;
+  display: block;
+  background: var(--font-color);
+
+  width: 24px;
+  height: 7px;
+  border-radius: 20px;
+
+  left: 1.5rem;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+.checkbox-container .checkbox-label::after {
+  content: '';
+  position: absolute;
+  display: block;
+  background: var(--background-dark);
+
+  width: 15px;
+  height: 15px;
+  border-radius: 20px;
+
+  left: 1.5rem;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+.checkbox-container .checkbox-label::before, .checkbox-container .checkbox-label::after {
+  -webkit-transition: all 0.15s ease-in-out;
+  -moz-transition:    all 0.15s ease-in-out;
+  -o-transition:      all 0.15s ease-in-out;
+  -ms-transition:     all 0.15s ease-in-out;
+  transition:         all 0.15s ease-in-out;
+}
+.checkbox-container .checkbox:checked + .checkbox-label::before {
+  background: var(--accent-4);
+}
+.checkbox-container .checkbox:checked + .checkbox-label::after {
+  left: calc(1.5rem + 15px);
+}
+.infinite-loading-label {
+  color: var(--font-color);
+  font-size: 1.6rem;
+  padding: 1.5rem;
 }
 
 jump-to-page svg {
