@@ -690,7 +690,6 @@ sidebar-navigation {
   width: min(300px, 90%);
   height: 100%;
   max-height: 100vh;
-  
   background-color: var(--background-lightest);
   box-shadow: 3px 0 4px rgba(0, 0, 0, 0.3);
   transform: translate(calc(-100% - 1rem), 0%);
@@ -1243,7 +1242,7 @@ view-modal.hidden::before {
   height: auto;
   padding: 4rem;
   max-width: 1350px;
-  max-height: 600px;
+  max-height: min(600px, 75vh);
   transform: translate(-50%, -50%);
   background-color: var(--background-lighter);
   border-radius: 10px;
@@ -1351,7 +1350,7 @@ view-modal.hidden .view-modal__inner {
     flex-direction: column;
     padding: 2rem;
     max-width: 480px;
-    max-height: 500px;
+    max-height: min(500px, 75vh);
     overflow: auto;
   }
 
@@ -1560,7 +1559,7 @@ view-stats.hidden::before {
   height: auto;
   padding: 4rem;
   max-width: 1350px;
-  max-height: 600px;
+  max-height: min(600px, 75vh);
   transform: translate(-50%, -50%);
   background-color: var(--background-lighter);
   border-radius: 10px;
@@ -1650,7 +1649,7 @@ view-stats.hidden .view-stats__inner {
     flex-direction: column-reverse;
     padding: 2rem;
     max-width: 480px;
-    max-height: 500px;
+    max-height: min(500px, 75vh);
     overflow: auto;
   }
 
@@ -1712,7 +1711,7 @@ file-upload.hidden::before {
   height: auto;
   padding: 4rem;
   max-width: 1350px;
-  max-height: 600px;
+  max-height: min(600px, 75vh);
   transform: translate(-50%, -50%);
   background-color: var(--background-lighter);
   border-radius: 10px;
@@ -1793,7 +1792,7 @@ file-upload.hidden .file-upload__inner {
     flex-direction: column;
     padding: 2rem;
     max-width: 480px;
-    max-height: 500px;
+    max-height: min(500px, 75vh);
     overflow: auto;
   }
 
@@ -2023,8 +2022,6 @@ file-upload.hidden .file-upload__inner {
   all: unset;
   margin-left: auto;
   margin-top: auto;
-  right: 2rem;
-  bottom: 2rem;
   cursor: pointer;
 }
 
@@ -2086,7 +2083,7 @@ about-modal.hidden::before {
   height: auto;
   padding: 4rem;
   max-width: 1350px;
-  max-height: 600px;
+  max-height: min(600px, 75vh);
   overflow: auto;
   transform: translate(-50%, -50%);
   background-color: var(--background-lighter);
@@ -2101,7 +2098,7 @@ about-modal.hidden::before {
     flex-direction: column;
     padding: 2rem;
     max-width: 480px;
-    max-height: 500px;
+    max-height: min(500px, 75vh);
   }
 }
 
