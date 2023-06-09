@@ -624,6 +624,7 @@ class ViewModal extends HTMLElement {
     }
 
     document.addEventListener('rating:changed', debounce(function (event) { this.handleRatingChange(event); }).bind(this));
+    document.addEventListener('viewmodal:changeimage', debounce(function (event) { this.changeEventHandler(event); }, 400).bind(this));
   }
 
   setRatingControls(convertedRating) {
@@ -726,7 +727,22 @@ class ViewModal extends HTMLElement {
       this.infoContainer.classList.remove('hidden');
 
       document.documentElement.addEventListener('keydown', this.closeEventListener.bind(this));
+      document.documentElement.addEventListener('keydown', this.changeEventListener.bind(this));
     }.bind(this);
+  }
+
+  changeEventListener(event) {
+    if (event.keyCode === 37 && this.previousButton.disabled === false) {
+      document.dispatchEvent(new CustomEvent('viewmodal:changeimage', { detail: { direction: 'previous' } }));
+    } else if (event.keyCode === 39 && this.nextButton.disabled === false) {
+      document.dispatchEvent(new CustomEvent('viewmodal:changeimage', { detail: { direction: 'next' } }));
+    }
+  }
+
+  changeEventHandler(event) {
+    const direction = event.detail.direction;
+
+    this.changeImage(direction);
   }
 
   closeModal() {
@@ -736,6 +752,7 @@ class ViewModal extends HTMLElement {
     this.classList.add('hidden');
 
     document.documentElement.removeEventListener('keydown', this.closeEventListener.bind(this));
+    document.documentElement.removeEventListener('keydown', this.changeEventListener.bind(this));
   }
 
   blurModal(event) {
