@@ -689,11 +689,22 @@ sidebar-navigation {
   top: 0;
   width: min(300px, 90%);
   height: 100%;
-  padding: 2rem;
+  max-height: 100vh;
+  
   background-color: var(--background-lightest);
   box-shadow: 3px 0 4px rgba(0, 0, 0, 0.3);
   transform: translate(calc(-100% - 1rem), 0%);
   transition: transform 0.2s ease-in-out;
+}
+
+.sidebar-navigation__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 2rem;
+  overflow: auto;
 }
 
 sidebar-navigation.open {
@@ -2010,7 +2021,8 @@ file-upload.hidden .file-upload__inner {
 /* --- About modal component --- */
 [data-action="open-about"] {
   all: unset;
-  position: absolute;
+  margin-left: auto;
+  margin-top: auto;
   right: 2rem;
   bottom: 2rem;
   cursor: pointer;

@@ -10,104 +10,106 @@
 </sticky-navigation>
 
 <sidebar-navigation>
-  <button type="button" data-action="close-sidemenu">
-    <svg viewBox="0 0 24 24">
-      <use xlink:href="#plus"></use>
-    </svg>
-  </button>
-  <div class="sidebar-nav__profile">
-    <div class="sidebar-nav__profile--avatar">
-      <img class="lazyload" src="<%- user.avatar %>" alt="Avatar">
+  <div class="sidebar-navigation__inner">
+    <button type="button" data-action="close-sidemenu">
+      <svg viewBox="0 0 24 24">
+        <use xlink:href="#plus"></use>
+      </svg>
+    </button>
+    <div class="sidebar-nav__profile">
+      <div class="sidebar-nav__profile--avatar">
+        <img class="lazyload" src="<%- user.avatar %>" alt="Avatar">
+      </div>
+
+      <div class="sidebar-nav__profile--name">
+        <h2>
+          <%- user.userName %>
+        </h2>
+      </div>
     </div>
 
-    <div class="sidebar-nav__profile--name">
-      <h2>
-        <%- user.userName %>
-      </h2>
+    <div class="sidebar-nav__search-tags">
+      <tag-search>
+        <div class="tag-search__controls">
+          <input type="text" placeholder="Search...">
+          <svg data-action="search">
+            <use xlink:href="#search"></use>
+          </svg>
+        </div>
+      </tag-search>
     </div>
-  </div>
+    <div class="sidebar-nav__sort">
+      <sort-options>
+        <div class="sort-options__inner">
+          <button class="sort-options__current-option" data-action="toggle-sort-options">
+            <span data-current>
+              <!-- This is rendered by JavaScript -->
+            </span>
+            <svg>
+              <use xlink:href="#sort"></use>
+            </svg>
+          </button>
+          <div class="sort-options__options">
+            <input type="radio" name="sort-option" value="date-asc" data-label="Date (Ascending)" id="date-asc">
+            <label for="date-asc">Date (Ascending)</label>
+            <input type="radio" name="sort-option" value="date-desc" data-label="Date (Descending)" id="date-desc">
+            <label for="date-desc">Date (Descending)</label>
+            <input type="radio" name="sort-option" value="rating-asc" data-label="Rating (Ascending)" id="rating-asc">
+            <label for="rating-asc">Rating (Ascending)</label>
+            <input type="radio" name="sort-option" value="rating-desc" data-label="Rating (Descending)" id="rating-desc">
+            <label for="rating-desc">Rating (Descending)</label>
+            <input type="radio" name="sort-option" value="filename-asc" data-label="Filename (Ascending)" id="filename-asc">
+            <label for="filename-asc">Filename (Ascending)</label>
+            <input type="radio" name="sort-option" value="filename-desc" data-label="Filename (Descending)" id="filename-desc">
+            <label for="filename-desc">Filename (Descending)</label>
+          </div>
+        </div>
+      </sort-options>
+    </div>
+    <div class="sidebar-nav__view-options">
+      <view-options>
+        <div class="view-options__inner">
+          <button class="view-options__current-option" data-action="toggle-view-options">
+            <span data-current>
+              <!-- This is rendered by JavaScript -->
+            </span>
+            <svg>
+              <use xlink:href="#eye"></use>
+            </svg>
+          </button>
+          <div class="view-options__options">
+            <input type="radio" name="view-option" value="yes" data-label="Show rated" id="view-option-rated">
+            <label for="view-option-rated">Show rated</label>
+            <input type="radio" name="view-option" value="no" data-label="Show unrated" id="view-option-unrated">
+            <label for="view-option-unrated">Show unrated</label>
+            <input type="radio" name="view-option" value="all" data-label="Show all" id="view-option-all">
+            <label for="view-option-all">Show all</label>
+          </div>
+        </div>
+      </view-options>
+    </div>
 
-  <div class="sidebar-nav__search-tags">
-    <tag-search>
-      <div class="tag-search__controls">
-        <input type="text" placeholder="Search...">
-        <svg data-action="search">
-          <use xlink:href="#search"></use>
+    <h2>
+      Actions
+    </h2>
+    <div class="sidebar-nav__actions">
+      <button type="button" data-action="open-file-upload">
+        <svg>
+          <use xlink:href="#upload"></use>
         </svg>
-      </div>
-    </tag-search>
-  </div>
-  <div class="sidebar-nav__sort">
-    <sort-options>
-      <div class="sort-options__inner">
-        <button class="sort-options__current-option" data-action="toggle-sort-options">
-          <span data-current>
-            <!-- This is rendered by JavaScript -->
-          </span>
-          <svg>
-            <use xlink:href="#sort"></use>
-          </svg>
-        </button>
-        <div class="sort-options__options">
-          <input type="radio" name="sort-option" value="date-asc" data-label="Date (Ascending)" id="date-asc">
-          <label for="date-asc">Date (Ascending)</label>
-          <input type="radio" name="sort-option" value="date-desc" data-label="Date (Descending)" id="date-desc">
-          <label for="date-desc">Date (Descending)</label>
-          <input type="radio" name="sort-option" value="rating-asc" data-label="Rating (Ascending)" id="rating-asc">
-          <label for="rating-asc">Rating (Ascending)</label>
-          <input type="radio" name="sort-option" value="rating-desc" data-label="Rating (Descending)" id="rating-desc">
-          <label for="rating-desc">Rating (Descending)</label>
-          <input type="radio" name="sort-option" value="filename-asc" data-label="Filename (Ascending)" id="filename-asc">
-          <label for="filename-asc">Filename (Ascending)</label>
-          <input type="radio" name="sort-option" value="filename-desc" data-label="Filename (Descending)" id="filename-desc">
-          <label for="filename-desc">Filename (Descending)</label>
-        </div>
-      </div>
-    </sort-options>
-  </div>
-  <div class="sidebar-nav__view-options">
-    <view-options>
-      <div class="view-options__inner">
-        <button class="view-options__current-option" data-action="toggle-view-options">
-          <span data-current>
-            <!-- This is rendered by JavaScript -->
-          </span>
-          <svg>
-            <use xlink:href="#eye"></use>
-          </svg>
-        </button>
-        <div class="view-options__options">
-          <input type="radio" name="view-option" value="yes" data-label="Show rated" id="view-option-rated">
-          <label for="view-option-rated">Show rated</label>
-          <input type="radio" name="view-option" value="no" data-label="Show unrated" id="view-option-unrated">
-          <label for="view-option-unrated">Show unrated</label>
-          <input type="radio" name="view-option" value="all" data-label="Show all" id="view-option-all">
-          <label for="view-option-all">Show all</label>
-        </div>
-      </div>
-    </view-options>
-  </div>
-
-  <h2>
-    Actions
-  </h2>
-  <div class="sidebar-nav__actions">
-    <button type="button" data-action="open-file-upload">
+        <span>Upload</span>
+      </button>
+      <button type="button" data-action="open-stats">
+        <svg>
+          <use xlink:href="#statistics"></use>
+        </svg>
+        <span>Statistics</span>
+      </button>
+    </div>
+    <button type="button" data-action="open-about">
       <svg>
-        <use xlink:href="#upload"></use>
+        <use xlink:href="#information"></use>
       </svg>
-      <span>Upload</span>
-    </button>
-    <button type="button" data-action="open-stats">
-      <svg>
-        <use xlink:href="#statistics"></use>
-      </svg>
-      <span>Statistics</span>
     </button>
   </div>
-  <button type="button" data-action="open-about">
-    <svg>
-      <use xlink:href="#information"></use>
-    </svg>
-  </button>
 </sidebar-navigation>
