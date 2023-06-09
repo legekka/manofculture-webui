@@ -1863,7 +1863,8 @@ file-upload.hidden .file-upload__inner {
   text-align: center;
 }
 
-.file__drop-area--hint button {
+.file__drop-area--hint button,
+.file__drop-area--hint-error button {
   all: unset;
   color: var(--accent-3);
   font-weight: 600;
@@ -1874,7 +1875,10 @@ file-upload.hidden .file-upload__inner {
 
 .file__drop-area--hint button:hover,
 .file__drop-area--hint button:active,
-.file__drop-area--hint button:focus {
+.file__drop-area--hint button:focus,
+.file__drop-area--hint-error button:hover,
+.file__drop-area--hint-error button:active,
+.file__drop-area--hint-error button:focus {
   color: var(--accent-4);
 }
 

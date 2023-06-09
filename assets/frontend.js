@@ -1262,7 +1262,7 @@ class FileUpload extends HTMLElement {
     this.submitButton = this.querySelector('[data-action="upload-file"]');
     this.resetButton = this.querySelector('[data-action="upload-new-file"]');
     this.fileInput = this.querySelector('input[type="file"]');
-    this.fileInputOpener = this.querySelector('[data-action="open-explorer"]');
+    this.fileInputOpeners = this.querySelectorAll('[data-action="open-explorer"]');
     this.dropArea = this.querySelector('[data-drop-area]');
     this.ratingControls = this.querySelectorAll('input[type="radio"]');
     this.acceptedFileTypes = ["image/jpg", "image/jpeg", "image/png"];
@@ -1278,8 +1278,11 @@ class FileUpload extends HTMLElement {
     this.closeButton.addEventListener('click', this.closeFileUpload.bind(this));
     this.closeButtonAfter.addEventListener('click', this.closeFileUpload.bind(this));
     this.resetButton.addEventListener('click', this.resetFileUpload.bind(this));
-    this.fileInputOpener.addEventListener('click', this.openFileInput.bind(this));
     this.fileInput.addEventListener('change', this.handleFileInput.bind(this));
+
+    for (const fileInputOpener of this.fileInputOpeners) {
+      fileInputOpener.addEventListener('click', this.openFileInput.bind(this));
+    }
 
     for (const ratingControl of this.ratingControls) {
       ratingControl.addEventListener('change', this.handleRatingChange.bind(this));
