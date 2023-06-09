@@ -690,6 +690,12 @@ class ViewModal extends HTMLElement {
     this.tagsContainer.innerHTML = tagsHtml;
   }
 
+  closeEventListener(event) {
+    if (event.keyCode === 27) {
+      this.closeModal();
+    }
+  } 
+
   openModal(event) {
     this.gridItem = event.detail.gridItem;
 
@@ -718,6 +724,8 @@ class ViewModal extends HTMLElement {
       document.documentElement.classList.add('overflow-hidden');
       this.classList.remove('hidden');
       this.infoContainer.classList.remove('hidden');
+
+      document.documentElement.addEventListener('keydown', this.closeEventListener.bind(this));
     }.bind(this);
   }
 
@@ -726,6 +734,8 @@ class ViewModal extends HTMLElement {
     this.stickyNavigation.classList.remove('force-close');
     document.documentElement.classList.remove('overflow-hidden');
     this.classList.add('hidden');
+
+    document.documentElement.removeEventListener('keydown', this.closeEventListener.bind(this));
   }
 
   blurModal(event) {
@@ -938,8 +948,16 @@ class ViewStats extends HTMLElement {
       this.pageWrapper.classList.add('blurred');
       this.stickyNavigation.classList.add('force-close');
       document.documentElement.classList.add('overflow-hidden');
+
+      document.documentElement.addEventListener('keydown', this.closeEventListener.bind(this));
     }.bind(this));
   }
+
+  closeEventListener(event) {
+    if (event.keyCode === 27) {
+      this.closeStats();
+    }
+  } 
 
   blurModal(event) {
     if (event.target.closest('.view-stats__inner') !== null) {
@@ -962,6 +980,7 @@ class ViewStats extends HTMLElement {
     document.documentElement.classList.remove('overflow-hidden');
 
     window.removeEventListener('resize', this.resizeEventListener);
+    document.documentElement.removeEventListener('keydown', this.closeEventListener.bind(this));
   }
 
   setInfo(data) {
@@ -1343,6 +1362,12 @@ class FileUpload extends HTMLElement {
     this.selectedRating = newValue;
   }
 
+  closeEventListener(event) {
+    if (event.keyCode === 27) {
+      this.closeFileUpload();
+    }
+  } 
+
   openFileUpload() {
     document.dispatchEvent(new CustomEvent('sidemenu:close'));
 
@@ -1350,6 +1375,8 @@ class FileUpload extends HTMLElement {
     this.pageWrapper.classList.add('blurred');
     this.stickyNavigation.classList.add('force-close');
     document.documentElement.classList.add('overflow-hidden');
+
+    document.documentElement.addEventListener('keydown', this.closeEventListener.bind(this));
   }
 
   blurModal(event) {
@@ -1397,6 +1424,8 @@ class FileUpload extends HTMLElement {
     document.documentElement.classList.remove('overflow-hidden');
 
     this.resetFileUpload();
+
+    document.documentElement.removeEventListener('keydown', this.closeEventListener.bind(this));
   }
 
   handleFileDropped(event) {
@@ -1557,6 +1586,8 @@ class AboutModal extends HTMLElement {
     this.classList.remove('hidden');
 
     document.dispatchEvent(new CustomEvent('sidemenu:close'));
+
+    document.documentElement.addEventListener('keydown', this.closeEventListener.bind(this));
   }
 
   closeModal() {
@@ -1564,7 +1595,15 @@ class AboutModal extends HTMLElement {
     this.stickyNavigation.classList.remove('force-close');
     document.documentElement.classList.remove('overflow-hidden');
     this.classList.add('hidden');
+
+    document.documentElement.removeEventListener('keydown', this.closeEventListener.bind(this));
   }
+
+  closeEventListener(event) {
+    if (event.keyCode === 27) {
+      this.closeModal();
+    }
+  } 
 }
 
 window.customElements.define('about-modal', AboutModal);
