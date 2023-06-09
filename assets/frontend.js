@@ -200,29 +200,116 @@ class ImageGrid extends HTMLElement {
     super();
 
     this.maxImageCount = 60;
+    this.currentlyLoading = true;
+    this.firstLoad = true;
     this.currentPage = 1;
     this.currentTags = [];
     this.currentSort = '';
     this.currentRated = '';
-    
+
     this.gridWrapper = this.querySelector('.grid-wrapper');
     this.gridItems = this.querySelectorAll('.grid-item');
     this.imagesData = [];
     this.emptyContainer = this.querySelector('.empty-container');
     this.navigationControls = this.querySelectorAll('pagination-nav');
+    this.infiniteScrolling = document.querySelector('#infinite-toggle-input');
+
 
     document.addEventListener('imagegrid:params:changed', this.getImagesData.bind(this));
     document.addEventListener('imagegrid:images:loaded', this.onImagesLoaded.bind(this));
     document.addEventListener('page:changed', this.handlePageChange.bind(this));
     document.addEventListener('filter:tags:changed', this.handleFilterChange.bind(this));
 
+    this.handleInfiniteScrolling();
+
     this.getImagesData();
 
     for (const item of this.gridItems) {
-      item.addEventListener('click', function () {
-        const itemImg = item.querySelector('img');
-        document.dispatchEvent(new CustomEvent('modal:open', { detail: { imageSrc: itemImg.getAttribute('src'), imageRating: item.dataset.rating, gridItem: item } }));
-      });
+      this.applyEventToItem(item);
+    }
+  }
+
+  applyEventToItem(item) {
+    if (item.eventAdded) return;
+    item.eventAdded = true;
+
+    item.addEventListener('click', function () {
+      const itemImg = item.querySelector('img');
+      document.dispatchEvent(new CustomEvent('modal:open', {
+        detail: {
+          imageSrc: itemImg.getAttribute('src'),
+          imageRating: item.dataset.rating,
+          gridItem: item
+        }
+      }));
+    });
+  }
+
+  handleInfiniteScrolling() {
+    if (typeof this.infiniteScrolling.handlingEvent === 'undefined') {
+      this.infiniteScrolling.checked = localStorage.getItem('infiniteScrolling') === '1';
+
+      this.infiniteScrolling.handlingEvent = true;
+
+      this.infiniteScrolling.addEventListener('change', function() {
+        if (this.infiniteScrolling.checked) {
+          localStorage.setItem('infiniteScrolling', '1');
+        } else {
+          localStorage.setItem('infiniteScrolling', '0');
+        }
+        this.handleInfiniteScrolling();
+      }.bind(this));
+    }
+
+    if (this.infiniteScrolling.checked) {
+      this.navigationControls[0].style.display = 'none';
+      for (const child of this.navigationControls[1].children) {
+        child.style.display = 'none';
+      }
+      this.navigationControls[1].insertAdjacentHTML('beforeend', '<span class="infinite-loading-label">Loading...</span>');
+
+      if (typeof this.navigationControls[1].observer === 'undefined') {
+        const options = {
+          threshold: 1,
+        };
+
+        const observer = new IntersectionObserver(function (entries) {
+          if (!entries[0].isIntersecting || this.currentlyLoading) {
+            return;
+          }
+
+          this.currentlyLoading = true;
+
+          this.handlePageChange({
+            detail: {
+              newPage: this.currentPage + 1,
+              preventUnload: true
+            }
+          });
+
+        }.bind(this), options);
+        this.navigationControls[1].observer = observer;
+        observer.observe(this.navigationControls[1]);
+      }
+    } else {
+      const lim = this.gridItems.length - 60;
+      for (let i = 0; i < lim; i++) {
+        this.gridItems[i].outerHTML = '';
+      }
+      this.gridItems = this.gridWrapper.querySelectorAll('.grid-item')
+      this.navigationControls[0].style.display = '';
+      if (this.navigationControls[1].children[this.navigationControls[1].children.length - 1].innerText.includes("Loading")) {
+        this.navigationControls[1].children[this.navigationControls[1].children.length - 1].remove();
+      }
+
+      for (const child of this.navigationControls[1].children) {
+        child.style.display = '';
+      }
+
+      if (typeof this.navigationControls[1].observer !== 'undefined') {
+        const observer = this.navigationControls[1].observer;
+        observer.disconnect();
+      }
     }
   }
 
@@ -296,17 +383,11 @@ class ImageGrid extends HTMLElement {
   onImagesLoaded() {
     const imageData = this.imagesData;
 
-    for (let i = 0; i < this.gridItems.length; i++) {
-      const gridItem = this.gridItems[i];
+    function updateItem(gridItem, imageDataItem) {
       const imageElem = gridItem.querySelector('img');
 
-      if (i >= imageData.length || typeof imageData[i] === 'undefined') {
-        gridItem.classList.add('empty');
-        continue;
-      }
-
-      const newImage = `/getimage?filename=${ imageData[i].image }`;
-      const newRating = convertRating(imageData[i].rating);
+      const newImage = `/getimage?filename=${ imageDataItem.image }`;
+      const newRating = convertRating(imageDataItem.rating);
       const newRank = ratingToRank(newRating);
       const newRankColor = getRankColor(newRank);
 
@@ -348,6 +429,31 @@ class ImageGrid extends HTMLElement {
         }
       }, 200);
     }
+
+    if (this.infiniteScrolling.checked && !this.firstLoad) {
+      for (const image of imageData) {
+        const clone = this.gridItems[0].cloneNode(true);
+
+        updateItem(clone, image);
+
+        this.applyEventToItem(clone);
+        this.gridWrapper.appendChild(clone);
+      }
+      this.gridItems = this.querySelectorAll('.grid-item');
+    } else {
+      for (let i = 0; i < this.gridItems.length; i++) {
+        const gridItem = this.gridItems[i];
+
+        if (i >= imageData.length || typeof imageData[i] === 'undefined') {
+          gridItem.classList.add('empty');
+          continue;
+        }
+
+        updateItem(gridItem, imageData[i]);
+      }
+    }
+    this.firstLoad = false;
+    this.currentlyLoading = false;
   }
 
   handlePageChange(event) {
@@ -356,8 +462,10 @@ class ImageGrid extends HTMLElement {
     this.currentSort = typeof event.detail.newSort !== 'undefined' ? event.detail.newSort : this.currentSort;
     this.currentRated = typeof event.detail.newRated !== 'undefined' ? event.detail.newRated : this.currentRated;
 
-    this.unloadCurrentImages();
-    this.scrollToTop();
+    if (typeof event.detail.preventUnload === 'undefined') {
+      this.unloadCurrentImages();
+      this.scrollToTop();
+    }
     this.updateUrl();
 
     document.dispatchEvent(new CustomEvent('imagegrid:params:changed'));
@@ -577,7 +685,7 @@ class JumpToPage extends HTMLElement {
     }
 
     const newPage = Number(this.input.value) > 1 ? Number(this.input.value) : 1;
-    
+
     document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: newPage } }));
     document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: newPage } }));
   }
@@ -695,7 +803,7 @@ class ViewModal extends HTMLElement {
     if (event.keyCode === 27) {
       this.closeModal();
     }
-  } 
+  }
 
   openModal(event) {
     this.gridItem = event.detail.gridItem;
@@ -710,7 +818,7 @@ class ViewModal extends HTMLElement {
 
     tempImg.onload = async function () {
       const filename = imageSrc.split('=')[1];
-      const promises = isUnrated === true ? [this.setTags(filename)] : [this.getNeibourImages(filename), this.setTags(filename)];
+      const promises = isUnrated === true ? [this.setTags(filename)] : [this.getNeighbourImages(filename), this.setTags(filename)];
 
       await Promise.all(promises);
 
@@ -831,7 +939,7 @@ class ViewModal extends HTMLElement {
     document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'success', message: 'Rating removed' } }));
   }
 
-  async getNeibourImages(fileName) {
+  async getNeighbourImages(fileName) {
     const currentTags = new URL(window.location.href).searchParams.get('filters') || '';
     const currentSort = new URL(window.location.href).searchParams.get('sort') || '';
     const currentRated = new URL(window.location.href).searchParams.get('rated') || '';
@@ -884,7 +992,7 @@ class ViewModal extends HTMLElement {
     this.nextButton.disabled = true;
     this.previousButton.disabled = true;
 
-    this.getNeibourImages(currentFileName).then(function (result) {
+    this.getNeighbourImages(currentFileName).then(function (result) {
       this.nextButton.disabled = false;
       this.previousButton.disabled = false;
 
@@ -974,7 +1082,7 @@ class ViewStats extends HTMLElement {
     if (event.keyCode === 27) {
       this.closeStats();
     }
-  } 
+  }
 
   blurModal(event) {
     if (event.target.closest('.view-stats__inner') !== null) {
@@ -1028,7 +1136,7 @@ class ViewStats extends HTMLElement {
     }
 
     this.ratingInfoContainer.innerHTML = ratingHtml;
-    this.backendInfoContainer.innerHTML = backendHtml; 
+    this.backendInfoContainer.innerHTML = backendHtml;
   }
 
   loadChart(data) {
@@ -1113,36 +1221,36 @@ class ToastMessage extends HTMLElement {
     if (this.type !== event.detail.type) {
       return;
     }
-  
+
     const message = event.detail.message;
     const self = this;
-  
+
     function sendMessage(message) {
       this.messageContainer.innerText = message;
       this.classList.add('open');
-  
+
       if (this.timeoutId) {
         clearTimeout(this.timeoutId);
       }
-  
+
       this.timeoutId = setTimeout(function () {
         this.classList.remove('open');
         this.timeoutId = null;
       }.bind(this), 5000);
     }
-  
+
     const existingMessage = document.querySelector(`toast-message.open`);
-  
+
     if (existingMessage !== null) {
       existingMessage.classList.remove('open');
-  
+
       setTimeout(function () {
         sendMessage.call(self, message);
       }, 200);
-  
+
       return;
     }
-  
+
     sendMessage.call(self, message);
   }
 }
@@ -1383,7 +1491,7 @@ class FileUpload extends HTMLElement {
     if (event.keyCode === 27) {
       this.closeFileUpload();
     }
-  } 
+  }
 
   openFileUpload() {
     document.dispatchEvent(new CustomEvent('sidemenu:close'));
@@ -1526,11 +1634,11 @@ class FileUpload extends HTMLElement {
       this.currentFile = null;
 
       const selectedRating = this.querySelector('input[type="radio"]:checked');
-  
+
       if (selectedRating !== null) {
         selectedRating.checked = false;
       }
-  
+
       this.submitButton.classList.remove('hidden');
       this.resetButton.classList.add('hidden');
       this.closeButtonAfter.classList.add('hidden');
@@ -1620,7 +1728,7 @@ class AboutModal extends HTMLElement {
     if (event.keyCode === 27) {
       this.closeModal();
     }
-  } 
+  }
 }
 
 window.customElements.define('about-modal', AboutModal);
