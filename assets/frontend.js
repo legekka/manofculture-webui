@@ -136,6 +136,7 @@ class StickyNavigation extends HTMLElement {
     this.sideMenu = document.querySelector('sidebar-navigation');
 
     this.opener.addEventListener('click', this.toggleSidemenu.bind(this));
+    document.addEventListener('sidemenu:closed', function () { document.documentElement.removeEventListener('click', this.clickOutListener.bind(this)); }.bind(this));
     window.addEventListener('scroll', debounce(function () { this.changeNavStage(); }, 25).bind(this));
   }
 
@@ -154,7 +155,21 @@ class StickyNavigation extends HTMLElement {
   toggleSidemenu() {
     this.classList.toggle('force-open');
     this.sideMenu.classList.toggle('open');
-    document.documentElement.classList.toggle('overflow-hidden');
+
+    if (this.sideMenu.classList.contains('open')) {
+      document.addEventListener('click', this.clickOutListener.bind(this));
+    } else {
+      document.removeEventListener('click', this.clickOutListener.bind(this));
+    }
+  }
+
+  clickOutListener(event) {
+    if (event.target.closest('sidebar-navigation') !== null || event.target.closest('sticky-navigation') !== null) {
+      return;
+    }
+
+    this.sideMenu.classList.remove('open');
+    this.classList.remove('force-open');
   }
 }
 
@@ -174,7 +189,7 @@ class SidebarNavigation extends HTMLElement {
   closeSidemenu() {
     this.classList.remove('open');
     document.querySelector('sticky-navigation').classList.remove('force-open');
-    document.documentElement.classList.remove('overflow-hidden');
+    document.dispatchEvent(new CustomEvent('sidemenu:closed'));
   }
 }
 
@@ -560,6 +575,7 @@ class ViewModal extends HTMLElement {
   constructor() {
     super();
 
+    this.stickyNavigation = document.querySelector('sticky-navigation');
     this.imageContainer = this.querySelector('.view-modal__image-container');
     this.infoContainer = this.querySelector('.view-modal__info-container');
     this.image = this.imageContainer.querySelector('img');
@@ -680,6 +696,7 @@ class ViewModal extends HTMLElement {
       this.filenameContainer.innerText = filename;
 
       this.pageWrapper.classList.add('blurred');
+      this.stickyNavigation.classList.add('force-close');
       document.documentElement.classList.add('overflow-hidden');
       this.classList.remove('hidden');
       this.infoContainer.classList.remove('hidden');
@@ -688,6 +705,7 @@ class ViewModal extends HTMLElement {
 
   closeModal() {
     this.pageWrapper.classList.remove('blurred');
+    this.stickyNavigation.classList.remove('force-close');
     document.documentElement.classList.remove('overflow-hidden');
     this.classList.add('hidden');
   }
@@ -853,6 +871,7 @@ class ViewStats extends HTMLElement {
   constructor() {
     super();
 
+    this.stickyNavigation = document.querySelector('sticky-navigation');
     this.opener = document.querySelector('[data-action="open-stats"]');
     this.closeButton = this.querySelector('[data-action="close-stats"]');
     this.statsContainer = this.querySelector('.view-stats__inner');
@@ -899,6 +918,7 @@ class ViewStats extends HTMLElement {
       this.opener.classList.add('open');
 
       this.pageWrapper.classList.add('blurred');
+      this.stickyNavigation.classList.add('force-close');
       document.documentElement.classList.add('overflow-hidden');
     }.bind(this));
   }
@@ -920,6 +940,7 @@ class ViewStats extends HTMLElement {
     this.statsInfoCurrentTraining.classList.add('hidden');
     this.opener.classList.remove('open');
     this.pageWrapper.classList.remove('blurred');
+    this.stickyNavigation.classList.remove('force-close');
     document.documentElement.classList.remove('overflow-hidden');
 
     window.removeEventListener('resize', this.resizeEventListener);
@@ -931,8 +952,8 @@ class ViewStats extends HTMLElement {
     };
     const backendData = {
       "Personal model status": data.RaterNNP_up_to_date === true ? 'Up to date' : 'Outdated',
-      "Global model status": data.RaterNNP_up_to_date === true ? 'Up to date' : 'Outdated',
-      "Training status": (data.trainer === null || !data.trainer.is_training) ? 'Not training' : 'Training',
+      "Global model status": data.RaterNN_up_to_date === true ? 'Up to date' : 'Outdated',
+      "Training status": (data.trainer === null || !data.trainer.is_training) ? 'Not training' : 'Training'
     };
 
     if (data.trainer !== null && data.trainer.is_training) {
@@ -1232,6 +1253,7 @@ class FileUpload extends HTMLElement {
   constructor() {
     super();
 
+    this.stickyNavigation = document.querySelector('sticky-navigation');
     this.inner = this.querySelector('.file-upload__inner');
     this.loadingCircle = this.querySelector('.file-upload__loading-circle');
     this.opener = document.querySelector('[data-action="open-file-upload"]');
@@ -1305,6 +1327,7 @@ class FileUpload extends HTMLElement {
 
     this.classList.remove('hidden');
     this.pageWrapper.classList.add('blurred');
+    this.stickyNavigation.classList.add('force-close');
     document.documentElement.classList.add('overflow-hidden');
   }
 
@@ -1349,6 +1372,7 @@ class FileUpload extends HTMLElement {
   closeFileUpload() {
     this.classList.add('hidden');
     this.pageWrapper.classList.remove('blurred');
+    this.stickyNavigation.classList.remove('force-close');
     document.documentElement.classList.remove('overflow-hidden');
 
     this.resetFileUpload();
@@ -1463,6 +1487,7 @@ class FileUpload extends HTMLElement {
         this.showError();
         this.dropArea.classList.remove('highlight');
         this.dropArea.classList.add('error');
+
         document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Invalid file type" } }));
       } else {
         this.imagePreview.src = reader.result;
@@ -1481,3 +1506,44 @@ class FileUpload extends HTMLElement {
 }
 
 window.customElements.define('file-upload', FileUpload);
+
+class AboutModal extends HTMLElement {
+  constructor() {
+    super();
+
+    this.opener = document.querySelector('[data-action="open-about"]');
+    this.closeButton = this.querySelector('[data-action="close-about"]');
+    this.pageWrapper = document.querySelector('.page-wrapper');
+    this.stickyNavigation = document.querySelector('sticky-navigation');
+
+    this.addEventListener('click', this.blurModal.bind(this));
+    this.opener.addEventListener('click', this.openModal.bind(this));
+    this.closeButton.addEventListener('click', this.closeModal.bind(this));
+  }
+
+  blurModal(event) {
+    if (event.target.closest('.about-modal__inner') !== null) {
+      return;
+    }
+
+    this.closeModal();
+  }
+
+  openModal() {
+    this.pageWrapper.classList.add('blurred');
+    this.stickyNavigation.classList.add('force-close');
+    document.documentElement.classList.add('overflow-hidden');
+    this.classList.remove('hidden');
+
+    document.dispatchEvent(new CustomEvent('sidemenu:close'));
+  }
+
+  closeModal() {
+    this.pageWrapper.classList.remove('blurred');
+    this.stickyNavigation.classList.remove('force-close');
+    document.documentElement.classList.remove('overflow-hidden');
+    this.classList.add('hidden');
+  }
+}
+
+window.customElements.define('about-modal', AboutModal);

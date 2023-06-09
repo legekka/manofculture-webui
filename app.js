@@ -43,13 +43,15 @@ app.get('/', async (req, res) => {
     avatar: req.signedCookies.avatar
   }
 
+  const currentYear = new Date().getFullYear();
+
   ejs.renderFile('./assets/pages/booru.ejs', (err, bodyContent) => {
     if (err) {
       console.log('Error: ', err);
       return res.status(400).send('Some error occurred!');
     }
 
-    ejs.renderFile('./assets/index.ejs', { page: bodyContent, user: user }, (err, html) => {
+    ejs.renderFile('./assets/index.ejs', { page: bodyContent, user: user, currentYear: currentYear }, (err, html) => {
       if (err) {
         console.log('Error: ', err);
         return res.status(400).send('Some error occurred!');

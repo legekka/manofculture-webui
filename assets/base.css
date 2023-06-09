@@ -636,6 +636,11 @@ sticky-navigation.force-open {
   transition: transform 0.2s ease-in-out;
 }
 
+sticky-navigation.force-close {
+  transform: translate(0, -100%) !important;
+  transition: transform 0.2s ease-in-out;
+}
+
 sticky-navigation button {
   all: unset;
   width: 2.5rem;
@@ -1335,7 +1340,7 @@ view-modal.hidden .view-modal__inner {
     flex-direction: column;
     padding: 2rem;
     max-width: 480px;
-    max-height: 700px;
+    max-height: 500px;
     overflow: auto;
   }
 
@@ -1634,7 +1639,7 @@ view-stats.hidden .view-stats__inner {
     flex-direction: column-reverse;
     padding: 2rem;
     max-width: 480px;
-    max-height: 700px;
+    max-height: 500px;
     overflow: auto;
   }
 
@@ -1773,11 +1778,11 @@ file-upload.hidden .file-upload__inner {
 }
 
 @media screen and (max-width: 680px) {
-  .file-upload__inner{
+  .file-upload__inner {
     flex-direction: column;
     padding: 2rem;
     max-width: 480px;
-    max-height: 700px;
+    max-height: 500px;
     overflow: auto;
   }
 
@@ -2000,6 +2005,204 @@ file-upload.hidden .file-upload__inner {
     stroke-dashoffset: 184;
     transform: rotate(450deg);
   }
+}
+
+/* --- About modal component --- */
+[data-action="open-about"] {
+  all: unset;
+  position: absolute;
+  right: 2rem;
+  bottom: 2rem;
+  cursor: pointer;
+}
+
+[data-action="open-about"] svg {
+  width: 3em;
+  height: 3em;
+  fill: var(--font-color);
+  transition: fill 0.2s ease-in-out;
+}
+
+[data-action="open-about"]:hover svg {
+  fill: var(--accent-2);
+}
+
+about-modal {
+  opacity: 1;
+  visibility: visible;
+  position: fixed;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+about-modal::before {
+  content: '';
+  display: block;
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--background-color);
+  opacity: 0.5;
+  transition: opacity 0.2s ease-in-out;
+}
+
+about-modal.hidden {
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+about-modal.hidden::before {
+  opacity: 0;
+}
+
+.about-modal__inner {
+  display: flex;
+  position: absolute;
+  overflow: hidden;
+  z-index: 4;
+  left: 50%;
+  top: 50%;
+  width: calc(100% - 4rem);
+  height: auto;
+  padding: 4rem;
+  max-width: 1350px;
+  max-height: 600px;
+  overflow: auto;
+  transform: translate(-50%, -50%);
+  background-color: var(--background-lighter);
+  border-radius: 10px;
+  box-shadow: 3px 3px 8px 3px rgba(0, 0, 0, 0.2);
+  opacity: 1;
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+@media screen and (max-width: 780px) {
+  .about-modal__inner {
+    flex-direction: column;
+    padding: 2rem;
+    max-width: 480px;
+    max-height: 500px;
+  }
+}
+
+about-modal.hidden .about-modal__inner {
+  opacity: 0;
+  transform: translate(-50%, -25%);
+}
+
+.about-modal__close {
+  position: absolute;
+  z-index: 1;
+  right: 1.5rem;
+  top: 1.5rem;
+}
+
+.about-modal__inner [data-action="close-about"] {
+  all: unset;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  transform: rotate(45deg);
+  transform-origin: center center;
+  background: var(--background-lighter);
+  border-radius: 2em;
+}
+
+.about-modal__inner h3 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.about-modal__info-container {
+  width: 100%;
+  padding: 0 2rem 0 0;
+  margin-right: -2rem;
+  flex-shrink: 0;
+  flex-grow: 1;
+  height: 100%;
+}
+
+.about-modal__profiles {
+  display: flex;
+}
+
+.about-modal__profile {
+  flex: 0 0 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+@media screen and (max-width: 780px) {
+  .about-modal__profiles {
+    flex-direction: column;
+  }
+
+  .about-modal__profile {
+    flex: 0 0 100%;
+  }
+
+  .about-modal__profile:first-child {
+    margin-bottom: 2rem;
+  }
+}
+
+.about-modal__profile img {
+  width: 15rem;
+  height: 15rem;
+  object-fit: cover;
+  border-radius: 15rem;
+}
+
+.about-modal__profile a {
+  text-decoration: none;
+}
+
+.about-modal__profile h4 {
+  margin-top: 3rem;
+  font-size: 3rem;
+  color: var(--font-color);
+}
+
+.about-modal__description {
+  max-width: 90rem;
+  margin: 5rem auto;
+}
+
+.about-modal__description h5 {
+  font-size: 2rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.about-modal__description a {
+  font-size: 1.6rem;
+  color: var(--accent-3);
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+.about-modal__description a:hover {
+  color: var(--accent-2);
+}
+
+.about-modal__copyright {
+  text-align: center;
+  font-style: italic;
 }
 
 /* --- Toast message component --- */
