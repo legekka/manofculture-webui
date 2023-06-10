@@ -308,7 +308,10 @@ class ImageGrid extends HTMLElement {
       }
 
       this.gridItems = this.gridWrapper.querySelectorAll('.grid-item');
-      this.navigationControls[0].classList.remove('hidden');
+
+      for (const navigationControl of this.navigationControls) {
+        navigationControl.classList.remove('hidden');
+      }
 
       if (this.navigationControls[1].children[this.navigationControls[1].children.length - 1].innerText.includes("Loading")) {
         this.navigationControls[1].children[this.navigationControls[1].children.length - 1].remove();
