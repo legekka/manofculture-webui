@@ -178,6 +178,18 @@ app.get('/getimage', async (req, res) => {
   }
 });
 
+app.get('/getthumbnail', async (req, res) => {
+  const filename = req.query.filename;
+
+  try {
+    const image = await axios.get(`${ API_URL }/getthumbnail?filename=${ filename }`, { responseType: 'arraybuffer' });
+    return res.status(200).send(image.data);
+  } catch (error) {
+    console.log('Error', error);
+    return res.status(400).send({ error: 'Some error occurred!' });
+  }
+});
+
 app.get('/gettags', async (req, res) => {
   const filename = req.query.filename;
 

@@ -251,7 +251,7 @@ class ImageGrid extends HTMLElement {
     item.addEventListener('click', function () {
       const itemImg = item.querySelector('img');
 
-      document.dispatchEvent(new CustomEvent('modal:open', { detail: { imageSrc: itemImg.getAttribute('src'), imageRating: item.dataset.rating, gridItem: item } }));
+      document.dispatchEvent(new CustomEvent('modal:open', { detail: { imageSrc: itemImg.getAttribute('data-original-src'), imageRating: item.dataset.rating, gridItem: item } }));
     });
   }
 
@@ -398,7 +398,7 @@ class ImageGrid extends HTMLElement {
     function updateItem(gridItem, imageDataItem) {
       const imageElem = gridItem.querySelector('img');
 
-      const newImage = `/getimage?filename=${ imageDataItem.image }`;
+      const newImage = `/getthumbnail?filename=${ imageDataItem.image }`;
       const newRating = convertRating(imageDataItem.rating);
       const newRank = ratingToRank(newRating);
       const newRankColor = getRankColor(newRank);
@@ -431,6 +431,7 @@ class ImageGrid extends HTMLElement {
         gridItem.style.setProperty('--rank-color-dark', newRankColor !== null ? newRankColor.rankColorDark : 'transparent');
 
         imageElem.src = newImage
+        imageElem.dataset.originalSrc = `/getimage?filename=${ imageDataItem.image }`;
         imageElem.classList.add('lazyload');
 
         const tempImage = new Image();
@@ -1011,21 +1012,23 @@ class ViewModal extends HTMLElement {
     this.getNeighbourImages(currentFileName).then(function (result) {
       const supposedPage = direction === 'next' ? Math.ceil((result.position + 1) / 60) : Math.ceil((result.position - 1) / 60);
 
-      setTimeout(function () {
-        this.setTags(currentFileName).then(function () {
-          this.setRatingControls(convertRating(currentRating));
+      this.setTags(currentFileName).then(function () {
+        this.setRatingControls(convertRating(currentRating));
 
-          this.filenameContainer.innerText = currentFileName;
-          this.infoContainer.classList.remove('hidden');
+        this.filenameContainer.innerText = currentFileName;
+        this.infoContainer.classList.remove('hidden');
+        this.image.classList.add('lazyload');
 
+        const newImage = new Image();
+        newImage.src = `/getimage?filename=${ currentFileName }`;
+        newImage.onload = function () {
           this.image.src = `/getimage?filename=${ currentFileName }`;
-          this.image.classList.add('lazyload');
           this.image.classList.remove('hidden');
 
           this.nextButton.disabled = false;
           this.previousButton.disabled = false;
-        }.bind(this));
-      }.bind(this), 200);
+        }.bind(this);
+      }.bind(this));
 
       if (supposedPage !== Number(currentPage) && supposedPage >= 1) {
         document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: supposedPage } }));
