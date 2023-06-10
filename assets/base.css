@@ -1045,11 +1045,11 @@ jump-to-page {
 [data-action="open-controls"],
 [data-action="open-stats"],
 [data-action="open-file-upload"],
-.checkbox-label,
 [data-action="remove-rating"],
 [data-action="upload-file"],
 [data-action="upload-new-file"],
-.file-upload__actions [data-action="close-file-upload"] {
+.file-upload__actions [data-action="close-file-upload"],
+.checkbox-label {
   background: transparent;
   border: none;
   color: var(--font-color);
@@ -1078,9 +1078,6 @@ jump-to-page {
 [data-action="open-stats"]:hover,
 [data-action="open-stats"]:active,
 [data-action="open-stats"]:focus-visible,
-.checkbox-label:hover,
-.checkbox-label:active,
-.checkbox-label:focus-visible,
 [data-action="open-file-upload"]:hover,
 [data-action="open-file-upload"]:active,
 [data-action="open-file-upload"]:focus-visible,
@@ -1089,7 +1086,10 @@ jump-to-page {
 [data-action="upload-file"]:focus-visible,
 [data-action="upload-new-file"]:hover,
 [data-action="upload-new-file"]:active,
-[data-action="upload-new-file"]:focus-visible {
+[data-action="upload-new-file"]:focus-visible,
+.checkbox-label:hover,
+.checkbox-label:active,
+.checkbox-label:focus-visible {
   background-color: var(--accent-3);
 }
 
@@ -1117,11 +1117,9 @@ jump-to-page {
   position: absolute;
   display: block;
   background: var(--font-color);
-
   width: 24px;
   height: 7px;
   border-radius: 20px;
-
   left: 1.5rem;
   top: 50%;
   transform: translate(0, -50%);
@@ -1131,19 +1129,18 @@ jump-to-page {
   content: '';
   position: absolute;
   display: block;
-  background: var(--background-dark);
-
+  background: var(--accent-3);
   width: 15px;
   height: 15px;
   border-radius: 20px;
-
   left: 1.5rem;
   top: 50%;
   transform: translate(0, -50%);
 }
 
-.checkbox-container .checkbox-label::before, .checkbox-container .checkbox-label::after {
-  transition:         all 0.15s ease-in-out;
+.checkbox-container .checkbox-label::before,
+.checkbox-container .checkbox-label::after {
+  transition: all 0.2s ease-in-out;
 }
 
 .checkbox-container .checkbox:checked + .checkbox-label::before {
@@ -1152,6 +1149,7 @@ jump-to-page {
 
 .checkbox-container .checkbox:checked + .checkbox-label::after {
   left: calc(1.5rem + 15px);
+  background: var(--accent-2);
 }
 
 .infinite-loading-label {
@@ -2220,6 +2218,10 @@ about-modal.hidden .about-modal__inner {
   flex-direction: column;
   align-items: center;
   text-align: center;
+}
+
+.about-modal__profile p {
+  font-weight: 400;
 }
 
 @media screen and (max-width: 780px) {

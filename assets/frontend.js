@@ -230,18 +230,16 @@ class ImageGrid extends HTMLElement {
   }
 
   applyEventToItem(item) {
-    if (item.eventAdded) return;
+    if (item.eventAdded) {
+      return;
+    }
+
     item.eventAdded = true;
 
     item.addEventListener('click', function () {
       const itemImg = item.querySelector('img');
-      document.dispatchEvent(new CustomEvent('modal:open', {
-        detail: {
-          imageSrc: itemImg.getAttribute('src'),
-          imageRating: item.dataset.rating,
-          gridItem: item
-        }
-      }));
+
+      document.dispatchEvent(new CustomEvent('modal:open', { detail: { imageSrc: itemImg.getAttribute('src'), imageRating: item.dataset.rating, gridItem: item } }));
     });
   }
 
@@ -257,15 +255,18 @@ class ImageGrid extends HTMLElement {
         } else {
           localStorage.setItem('infiniteScrolling', '0');
         }
+
         this.handleInfiniteScrolling();
       }.bind(this));
     }
 
     if (this.infiniteScrolling.checked) {
-      this.navigationControls[0].style.display = 'none';
+      this.navigationControls[0].classList.add('hidden');
+
       for (const child of this.navigationControls[1].children) {
         child.style.display = 'none';
       }
+
       this.navigationControls[1].insertAdjacentHTML('beforeend', '<span class="infinite-loading-label">Loading...</span>');
 
       if (typeof this.navigationControls[1].observer === 'undefined') {
@@ -280,24 +281,23 @@ class ImageGrid extends HTMLElement {
 
           this.currentlyLoading = true;
 
-          this.handlePageChange({
-            detail: {
-              newPage: this.currentPage + 1,
-              preventUnload: true
-            }
-          });
-
+          document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: this.currentPage + 1, preventUnload: true } }));
         }.bind(this), options);
+
         this.navigationControls[1].observer = observer;
+
         observer.observe(this.navigationControls[1]);
       }
     } else {
-      const lim = this.gridItems.length - 60;
-      for (let i = 0; i < lim; i++) {
+      const limit = this.gridItems.length - 60;
+
+      for (let i = 0; i < limit; i++) {
         this.gridItems[i].outerHTML = '';
       }
-      this.gridItems = this.gridWrapper.querySelectorAll('.grid-item')
-      this.navigationControls[0].style.display = '';
+
+      this.gridItems = this.gridWrapper.querySelectorAll('.grid-item');
+      this.navigationControls[0].classList.remove('hidden');
+
       if (this.navigationControls[1].children[this.navigationControls[1].children.length - 1].innerText.includes("Loading")) {
         this.navigationControls[1].children[this.navigationControls[1].children.length - 1].remove();
       }
@@ -307,8 +307,8 @@ class ImageGrid extends HTMLElement {
       }
 
       if (typeof this.navigationControls[1].observer !== 'undefined') {
-        const observer = this.navigationControls[1].observer;
-        observer.disconnect();
+        this.navigationControls[1].observer.disconnect();
+        this.navigationControls[1].observer = void 0;
       }
     }
   }
@@ -452,6 +452,7 @@ class ImageGrid extends HTMLElement {
         updateItem(gridItem, imageData[i]);
       }
     }
+
     this.firstLoad = false;
     this.currentlyLoading = false;
   }
@@ -466,6 +467,7 @@ class ImageGrid extends HTMLElement {
       this.unloadCurrentImages();
       this.scrollToTop();
     }
+
     this.updateUrl();
 
     document.dispatchEvent(new CustomEvent('imagegrid:params:changed'));
@@ -996,7 +998,7 @@ class ViewModal extends HTMLElement {
       this.nextButton.disabled = false;
       this.previousButton.disabled = false;
 
-      const supposedPage = direction === 'next' ? Math.ceil((result.position + 1) / 60) : Math.ceil((result.position -1) / 60);
+      const supposedPage = direction === 'next' ? Math.ceil((result.position + 1) / 60) : Math.ceil((result.position - 1) / 60);
 
       setTimeout(function () {
         this.setTags(currentFileName).then(function () {
