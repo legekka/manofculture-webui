@@ -1129,7 +1129,7 @@ jump-to-page {
   content: '';
   position: absolute;
   display: block;
-  background: var(--accent-3);
+  background: var(--accent-4);
   width: 15px;
   height: 15px;
   border-radius: 20px;
@@ -1350,6 +1350,7 @@ view-modal.hidden .view-modal__inner {
 .view-modal__image-container > button {
   all: unset;
   position: absolute;
+  z-index: 2;
   cursor: pointer;
   padding: 2rem;
   background-color: var(--background-lighter);
