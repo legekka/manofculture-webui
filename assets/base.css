@@ -1419,7 +1419,7 @@ view-modal.hidden .view-modal__inner {
     flex-direction: column;
     padding: 2rem;
     max-width: 480px;
-    max-height: min(500px, 75vh);
+    max-height: min(600px, 75vh);
     overflow: auto;
   }
 
@@ -1718,7 +1718,7 @@ view-stats.hidden .view-stats__inner {
     flex-direction: column-reverse;
     padding: 2rem;
     max-width: 480px;
-    max-height: min(500px, 75vh);
+    max-height: min(600px, 75vh);
     overflow: auto;
   }
 
@@ -1861,7 +1861,7 @@ file-upload.hidden .file-upload__inner {
     flex-direction: column;
     padding: 2rem;
     max-width: 480px;
-    max-height: min(500px, 75vh);
+    max-height: min(600px, 75vh);
     overflow: auto;
   }
 
@@ -2171,7 +2171,7 @@ about-modal.hidden::before {
     flex-direction: column;
     padding: 2rem;
     max-width: 480px;
-    max-height: min(500px, 75vh);
+    max-height: min(600px, 75vh);
   }
 }
 
