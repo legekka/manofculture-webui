@@ -202,6 +202,7 @@ class ImageGrid extends HTMLElement {
     this.maxImageCount = 60;
     this.currentlyLoading = true;
     this.firstLoad = true;
+    this.resetPage = false;
     this.currentPage = 1;
     this.currentTags = [];
     this.currentSort = '';
@@ -211,14 +212,20 @@ class ImageGrid extends HTMLElement {
     this.gridItems = this.querySelectorAll('.grid-item');
     this.imagesData = [];
     this.emptyContainer = this.querySelector('.empty-container');
+    this.resetFiltersButton = this.querySelector('[data-action="reset-filters"]');
     this.navigationControls = this.querySelectorAll('pagination-nav');
     this.infiniteScrolling = document.querySelector('#infinite-toggle-input');
 
+    this.resetFiltersButton.addEventListener('click', function () {
+      document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: 1, newTags: '', newSort: '', newRated: '' } }));
+      document.dispatchEvent(new CustomEvent('filters:reset'));
+    }.bind(this));
 
     document.addEventListener('imagegrid:params:changed', this.getImagesData.bind(this));
     document.addEventListener('imagegrid:images:loaded', this.onImagesLoaded.bind(this));
     document.addEventListener('page:changed', this.handlePageChange.bind(this));
     document.addEventListener('filter:tags:changed', this.handleFilterChange.bind(this));
+    document.addEventListener('filters:reset', this.handleReset.bind(this));
 
     this.handleInfiniteScrolling();
 
@@ -227,6 +234,11 @@ class ImageGrid extends HTMLElement {
     for (const item of this.gridItems) {
       this.applyEventToItem(item);
     }
+  }
+
+  handleReset() {
+    this.resetPage = true;
+    this.handleInfiniteScrolling();
   }
 
   applyEventToItem(item) {
@@ -430,7 +442,7 @@ class ImageGrid extends HTMLElement {
       }, 200);
     }
 
-    if (this.infiniteScrolling.checked && !this.firstLoad) {
+    if (this.infiniteScrolling.checked && (!this.firstLoad && !this.resetPage)) {
       for (const image of imageData) {
         const clone = this.gridItems[0].cloneNode(true);
 
@@ -450,6 +462,10 @@ class ImageGrid extends HTMLElement {
         }
 
         updateItem(gridItem, imageData[i]);
+      }
+
+      if (this.resetPage === true) {
+        this.resetPage = false;
       }
     }
 
@@ -494,6 +510,7 @@ class ImageGrid extends HTMLElement {
     this.updateUrl();
 
     document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: 1 } }));
+    document.dispatchEvent(new CustomEvent('filters:reset'));
     document.dispatchEvent(new CustomEvent('imagegrid:params:changed'));
   }
 
@@ -513,7 +530,7 @@ class ImageGrid extends HTMLElement {
       }
     }
 
-    window.history.pushState({}, '', `${ currentUrl.origin }${ currentUrl.pathname }?${ urlParams.toString() }`);
+    window.history.pushState({}, '', `${ currentUrl.origin }${ currentUrl.pathname }${ urlParams.toString() !== '' ? '?' + urlParams.toString() : '' }`);
   }
 }
 
@@ -606,6 +623,10 @@ class PaginationNav extends HTMLElement {
 
     if (nextElem) {
       navElem.appendChild(nextElem);
+    }
+
+    if (localStorage.getItem('infiniteScrolling') === '1') {
+      this.classList.add('hidden');
     }
 
     this.querySelector('.pagination-nav').innerHTML = navElem.innerHTML;
@@ -1008,6 +1029,7 @@ class ViewModal extends HTMLElement {
 
       if (supposedPage !== Number(currentPage) && supposedPage >= 1) {
         document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: supposedPage } }));
+        document.dispatchEvent(new CustomEvent('filters:reset'));
       }
     }.bind(this));
   }
@@ -1358,6 +1380,7 @@ class SortOptions extends HTMLElement {
 
     document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: 1 } }));
     document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: 1, newSort: newSort } }));
+    document.dispatchEvent(new CustomEvent('filters:reset'));
   }
 }
 
@@ -1401,6 +1424,7 @@ class ViewOptions extends HTMLElement {
 
     document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: 1 } }));
     document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: 1, newRated: newRated } }));
+    document.dispatchEvent(new CustomEvent('filters:reset'));
   }
 }
 
@@ -1622,6 +1646,7 @@ class FileUpload extends HTMLElement {
 
     document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'success', message: "File has been uploaded" } }));
     document.dispatchEvent(new CustomEvent('page:changed', { detail: { newPage: 1 } }));
+    document.dispatchEvent(new CustomEvent('filters:reset'));
   }
 
   resetFileUpload() {

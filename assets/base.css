@@ -1016,6 +1016,8 @@ img[src=""] {
 /* --- Jump to page component --- */
 /* --- And --- */
 /* --- Tag search component --- */
+/* --- And --- */
+/* --- Buttons --- */
 jump-to-page {
   position: absolute;
   right: 0;
@@ -1048,6 +1050,7 @@ jump-to-page {
 [data-action="remove-rating"],
 [data-action="upload-file"],
 [data-action="upload-new-file"],
+[data-action="reset-filters"],
 .file-upload__actions [data-action="close-file-upload"],
 .checkbox-label {
   background: transparent;
@@ -1087,6 +1090,9 @@ jump-to-page {
 [data-action="upload-new-file"]:hover,
 [data-action="upload-new-file"]:active,
 [data-action="upload-new-file"]:focus-visible,
+[data-action="reset-filters"]:hover,
+[data-action="reset-filters"]:active,
+[data-action="reset-filters"]:focus-visible,
 .checkbox-label:hover,
 .checkbox-label:active,
 .checkbox-label:focus-visible {
