@@ -1271,6 +1271,7 @@ tag-search svg:hover {
   padding-top: 15px;
   border-radius: 10px;
   background-color: var(--background-light);
+  box-shadow: 0 6px 5px 0 rgba(0, 0, 0, 0.2);
 }
 
 .tag-search__controls tag-recommendations.hidden {
