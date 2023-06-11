@@ -1276,6 +1276,7 @@ tag-search svg:hover {
 
 .tag-search__controls tag-recommendations.hidden {
   display: none;
+  box-shadow: none;
 }
 
 .tag-search__controls .tag-recommendation {
