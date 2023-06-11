@@ -1213,6 +1213,7 @@ tag-search svg:hover {
 }
 
 .tag-search__controls {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1258,6 +1259,39 @@ tag-search svg:hover {
 .jump-to-page__controls input:active,
 .jump-to-page__controls input:focus-visible {
   box-shadow: 0 4px 0 -1px var(--accent-3);
+}
+
+.tag-search__controls tag-recommendations {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  left: 0;
+  top: calc(100% - 15px);
+  width: 100%;
+  padding-top: 15px;
+  border-radius: 10px;
+  background-color: var(--background-light);
+}
+
+.tag-search__controls tag-recommendations.hidden {
+  display: none;
+}
+
+.tag-search__controls .tag-recommendation {
+  display: block;
+  width: calc(100% - 2rem);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.tag-search__controls .tag-recommendation:hover {
+  background-color: var(--accent-3);
+}
+
+.tag-search__controls .tag-recommendation.selected {
+  background-color: var(--accent-4);
 }
 
 /* --- Rating modal component --- */

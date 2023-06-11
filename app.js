@@ -202,6 +202,16 @@ app.get('/gettags', async (req, res) => {
   }
 });
 
+app.get('/getalltags', async (req, res) => {
+  try {
+    const tags = await axios.get(`${ API_URL }/gettags`);
+    return res.status(200).send(tags.data);
+  } catch (error) {
+    console.log('Error', error);
+    return res.status(400).send({ error: 'Some error occurred!' });
+  }
+});
+
 app.post('/updaterating', async (req, res) => {
   const filename = req.body.filename;
   const rating = req.body.rating;

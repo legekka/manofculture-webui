@@ -164,7 +164,10 @@ class StickyNavigation extends HTMLElement {
   }
 
   clickOutListener(event) {
-    if (event.target.closest('sidebar-navigation') !== null || event.target.closest('sticky-navigation') !== null) {
+    if (event.target.closest('sidebar-navigation') !== null || 
+        event.target.closest('sticky-navigation') !== null ||
+        event.target.classList.contains('tag-recommendation')
+    ) {
       return;
     }
 
@@ -1316,23 +1319,34 @@ class TagSearch extends HTMLElement {
     this.searchButton = this.querySelector('[data-action="search"]');
 
     this.searchButton.addEventListener('click', this.handleSearch.bind(this));
-    this.input.addEventListener('keydown', this.handleInputSearch.bind(this));
+    this.input.addEventListener('keydown', function (event) {
+      if (event.keyCode === 13 || event.keyCode === 40 || event.keyCode === 38) {
+        event.preventDefault();
+        event.stopPropagation();
+    
+        if (event.keyCode === 40 || event.keyCode === 38) {
+          document.dispatchEvent(new CustomEvent('tagsearch:keydown', { bubbles: true, detail: { keyCode: event.keyCode } }));
+    
+          return;
+        } else if (event.keyCode === 13 && this.querySelector('tag-recommendations .selected') !== null) {
+          document.dispatchEvent(new CustomEvent('tagsearch:keydown', { bubbles: true, detail: { keyCode: event.keyCode } }));
+    
+          return;
+        } else if (event.keyCode !== 13) {
+          return;
+        }
+    
+        const searchQuery = this.input.value;
+    
+        document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: 1 } }));
+        document.dispatchEvent(new CustomEvent('filter:tags:changed', { detail: { action: 'change', tags: searchQuery } }));
+      }
+    }.bind(this));
 
     document.addEventListener('tagsearch:tags:set', this.setTags.bind(this));
   }
 
   handleSearch() {
-    const searchQuery = this.input.value;
-
-    document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: 1 } }));
-    document.dispatchEvent(new CustomEvent('filter:tags:changed', { detail: { action: 'change', tags: searchQuery } }));
-  }
-
-  handleInputSearch(event) {
-    if (event.keyCode !== 13) {
-      return;
-    }
-
     const searchQuery = this.input.value;
 
     document.dispatchEvent(new CustomEvent('jumpto:page:changed', { detail: { newPage: 1 } }));
@@ -1347,6 +1361,151 @@ class TagSearch extends HTMLElement {
 }
 
 window.customElements.define('tag-search', TagSearch);
+
+class TagRecommendations extends HTMLElement {
+  constructor() {
+    super();
+
+    this.tags = [];
+    this.searchInput = document.querySelector('tag-search input');
+
+    this.init();
+  }
+
+  async init() {
+    const tags = await fetch('/getalltags').then(function (response) {
+      if (response.status !== 200) {
+        document.dispatchEvent(new CustomEvent('toast:show', { detail: { type: 'error', message: "Couldn't fetch tags" } }));
+        return null;
+      }
+
+      return response.json();
+    });
+
+    this.tags = tags.tags;
+
+    this.searchInput.addEventListener('input', this.handleRecommendations.bind(this));
+    document.addEventListener('tagsearch:keydown', this.changeSelectedOption.bind(this));
+  }
+
+  handleRecommendations() {
+    this.resetOptions();
+
+    const searchQuery = this.searchInput.value;
+    const splitQuery = searchQuery.split(',');
+    const currentQuery = splitQuery[splitQuery.length - 1].trim();
+
+    if (currentQuery === '') {
+      this.classList.add('hidden');
+      return;
+    }
+
+    const filteredTags = this.tags.filter(function (tag) {
+      return tag.includes(currentQuery) && (tag !== currentQuery);
+    });
+
+    if (filteredTags.length === 0) {
+      this.classList.add('hidden');
+      return;
+    }
+
+    for (let i = 0; i < 7; i++) {
+      if (typeof filteredTags[i] === 'undefined') {
+        break;
+      }
+
+      const recommendation = document.createElement('button');
+      recommendation.classList.add('tag-recommendation');
+      recommendation.innerText = filteredTags[i];
+
+      recommendation.addEventListener('click', this.handleRecommendationClick.bind(this));
+
+      this.appendChild(recommendation);
+    }
+
+    this.classList.remove('hidden');
+
+    document.documentElement.addEventListener('click', this.blurEventListener.bind(this));
+  }
+
+  handleRecommendationClick(event) {
+    const currentQuery = this.searchInput.value;
+    const splitQuery = currentQuery.split(',');
+    splitQuery[splitQuery.length - 1] = event.target.innerText;
+    this.searchInput.value = splitQuery.join(',');
+
+    this.resetOptions();
+  }
+
+  resetOptions() {
+    this.classList.add('hidden');
+    
+    for (const child of this.querySelectorAll('.tag-recommendation')) {
+      child.removeEventListener('click', this.handleRecommendationClick.bind(this));
+      child.remove();
+    }
+  }
+
+  blurEventListener(event) {
+    if (event.target.closest('tag-search') !== null) {
+      return;
+    }
+
+    this.resetOptions();
+
+    document.documentElement.removeEventListener('click', this.blurEventListener.bind(this));
+  }
+
+  changeSelectedOption(event) {
+    const currentSelected = this.querySelector('.selected');
+
+    if (event.detail.keyCode === 40) {
+      if (this.children.length === 0) {
+        return;
+      }
+
+      if (currentSelected === null) {
+        this.children[0].classList.add('selected');
+        return;
+      }
+
+      const nextSibling = currentSelected.nextElementSibling;
+
+      if (nextSibling !== null) {
+        currentSelected.classList.remove('selected');
+        nextSibling.classList.add('selected');
+      }
+    } else if (event.detail.keyCode === 38) {
+      if (this.children.length === 0) {
+        return;
+      }
+
+      if (currentSelected === null) {
+        return;
+      }
+
+      const previousSibling = currentSelected.previousElementSibling;
+
+      if (previousSibling !== null) {
+        currentSelected.classList.remove('selected');
+        previousSibling.classList.add('selected');
+      }
+    } else if (event.detail.keyCode === 13) {
+      if (currentSelected === null) {
+        return;
+      }
+
+      const currentQuery = this.searchInput.value;
+      const splitQuery = currentQuery.split(',');
+      splitQuery[splitQuery.length - 1] = currentSelected.innerText;
+      this.searchInput.value = splitQuery.join(',');
+
+      this.resetOptions();
+    }
+  }
+}
+
+window.customElements.define('tag-recommendations', TagRecommendations);
 
 class SortOptions extends HTMLElement {
   constructor() {
